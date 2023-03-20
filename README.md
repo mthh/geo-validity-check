@@ -2,6 +2,9 @@
 
 Expose a `Valid` trait to check if georust/geo geometries are valid.
 
+These tests are mostly based on the [OGC Simple Features for SQL specification](https://www.ogc.org/standards/sfa)
+but also include some additional checks.
+
 ```rust
 use geo_validity_check::Valid;
 
@@ -23,4 +26,20 @@ let polygon = Polygon::new(
 
 assert!(!polygon.is_valid());
 println!("{}", polygon.invalidity_reason().unwrap()); // "Inner ring 0 intersects the exterior ring."
+
+let multipolygon = MultiPolygon(vec![
+    Polygon::new(
+        LineString::from(vec![(0.5, 0.5), (3., 0.5), (3., 2.5), (0.5, 2.5), (0.5, 0.5)]),
+        vec![LineString::from(vec![(1., 1.), (1., 2.), (2.5, 2.), (3.5, 1.), (1., 1.)])],
+    ),
+    Polygon::new(
+        LineString::from(vec![(0.5, 0.5), (3., 0.5), (3., 2.5), (0.5, 2.5), (0.5, 0.5)]),
+        vec![LineString::from(vec![(1., 1.), (1., 2.), (2.5, 2.), (3.5, 1.), (1., 1.)])],
+    ),
+]);
+
+assert!(!multipolygon.is_valid());
+println!("{}", multipolygon.invalidity_reason().unwrap());
+// "Inner ring 0 intersects the exterior ring (Polygon 0).
+// Inner ring 0 intersects the exterior ring (Polygon 1)."
 ```
