@@ -1,0 +1,8 @@
+[package]
+name = "geo-validity-check"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+geo-types = "^0.7"
+geo = "^0.24"
