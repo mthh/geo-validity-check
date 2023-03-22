@@ -1,6 +1,15 @@
 # geo-validity-check
 
-Expose a `Valid` trait to check if georust/geo geometries are valid.
+Expose a `Valid` trait to check if rust [geo-types](https://crates.io/crates/geo-types) geometries are valid.
+
+`Valid` trait has the following signature:
+
+```rust
+trait Valid {
+    fn is_valid(&self) -> bool;
+    fn invalidity_reason(&self) -> Option<String>;
+}
+```
 
 These tests are mostly based on the [OGC Simple Features for SQL specification](https://www.ogc.org/standards/sfa)
 but also include some additional checks.
@@ -25,7 +34,7 @@ let polygon = Polygon::new(
 );
 
 assert!(!polygon.is_valid());
-println!("{}", polygon.invalidity_reason().unwrap()); // "Inner ring 0 intersects the exterior ring."
+println!("{}", polygon.invalidity_reason().unwrap()); // "Interior ring 0 intersects the exterior ring."
 
 let multipolygon = MultiPolygon(vec![
     Polygon::new(
