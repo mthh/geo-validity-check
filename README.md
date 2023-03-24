@@ -13,6 +13,24 @@ trait Valid {
 
 The result of the invalidity reason can be formatted as a string as it implements the `Display` trait.
 
+## Checks implemented
+
+- [x] `Coord` and `Point` use finite numbers
+- [x] `MultiPoint` is made of valid points
+- [x] `Rect`, `Line` and `Triangle` are made of valid coords
+- [x] `Triangle` are not empty or degenerate (i.e. all points are different and not collinear)
+- [ ] `Line` is not of 0-length (i.e. both points are not the same)
+- [x] `LineString` is made of valid points
+- [x] `LineString` is not empty
+- [x] `LineString` has at least two different points
+- [x] `MultiLineString` is made of valid linestrings
+- [x] `Polygon` rings have at least 4 points (including the closing point)
+- [x] `Polygon` interior rings are contained in the exterior ring (but can touch it on a point)
+- [x] `Polygon` interior rings don't cross each other (but can touch on a point)
+- [x] `MultiPolygon` components don't cross each other (but can touch on a point)
+- [x] `MultiPolygon` is made of valid polygons
+- [ ] `GeometryCollection` is made of valid geometries
+
 ## Example
 
 ```rust
