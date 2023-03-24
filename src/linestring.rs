@@ -48,10 +48,8 @@ impl Valid for LineString {
 
 #[cfg(test)]
 mod tests {
-    use crate::{
-        CoordinatePosition, GeometryPosition, Problem, ProblemAtPosition, ProblemPosition, Valid,
-    };
-    use geo_types::{Coord, LineString, Point};
+    use crate::{CoordinatePosition, Problem, ProblemAtPosition, ProblemPosition, Valid};
+    use geo_types::{Coord, LineString};
 
     #[test]
     fn test_linestring_valid() {

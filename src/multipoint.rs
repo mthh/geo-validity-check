@@ -35,9 +35,7 @@ impl Valid for MultiPoint {
 
 #[cfg(test)]
 mod tests {
-    use crate::{
-        CoordinatePosition, GeometryPosition, Problem, ProblemAtPosition, ProblemPosition, Valid,
-    };
+    use crate::{GeometryPosition, Problem, ProblemAtPosition, ProblemPosition, Valid};
     use geo_types::{MultiPoint, Point};
 
     #[test]

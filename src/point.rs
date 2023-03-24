@@ -14,11 +14,8 @@ impl Valid for Point {
 
 #[cfg(test)]
 mod tests {
-    use crate::{
-        CoordinatePosition, GeometryPosition, Problem, ProblemAtPosition, ProblemPosition,
-        RingRole, Valid,
-    };
-    use geo_types::{Coord, Point};
+    use crate::{Problem, ProblemAtPosition, ProblemPosition, Valid};
+    use geo_types::Point;
 
     #[test]
     fn test_point_valid() {

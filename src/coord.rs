@@ -3,7 +3,7 @@ use geo_types::Coord;
 
 impl Valid for Coord {
     fn is_valid(&self) -> bool {
-        if utils::check_coord_is_not_finite(&self) {
+        if utils::check_coord_is_not_finite(self) {
             return false;
         }
         true
@@ -11,7 +11,7 @@ impl Valid for Coord {
     fn invalidity_reason(&self) -> Option<Vec<ProblemAtPosition>> {
         let mut reason = Vec::new();
 
-        if utils::check_coord_is_not_finite(&self) {
+        if utils::check_coord_is_not_finite(self) {
             reason.push(ProblemAtPosition(
                 Problem::NotFinite,
                 ProblemPosition::Point,

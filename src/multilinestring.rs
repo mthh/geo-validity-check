@@ -42,13 +42,9 @@ impl Valid for MultiLineString {
 #[cfg(test)]
 mod tests {
     use crate::{
-        CoordinatePosition, GeometryPosition, Problem, ProblemAtPosition, ProblemPosition,
-        RingRole, Valid,
+        CoordinatePosition, GeometryPosition, Problem, ProblemAtPosition, ProblemPosition, Valid,
     };
-    use geo_types::{
-        Coord, Geometry, GeometryCollection, LineString, MultiLineString, MultiPoint, MultiPolygon,
-        Point, Polygon,
-    };
+    use geo_types::{Coord, LineString, MultiLineString};
 
     #[test]
     fn test_multilinestring_valid() {

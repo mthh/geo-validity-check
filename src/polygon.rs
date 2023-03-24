@@ -50,7 +50,7 @@ impl Valid for Polygon {
 
             let pol_interior1 = Polygon::new(interior_ring.clone(), vec![]);
 
-            for (i, interior2) in self.interiors().iter().enumerate() {
+            for (_i, interior2) in self.interiors().iter().enumerate() {
                 if interior_ring != interior2 {
                     let pol_interior2 = Polygon::new(interior2.clone(), vec![]);
                     let intersection_matrix = pol_interior1.relate(&pol_interior2);
@@ -188,14 +188,8 @@ impl Valid for Polygon {
 
 #[cfg(test)]
 mod tests {
-    use crate::{
-        CoordinatePosition, GeometryPosition, Problem, ProblemAtPosition, ProblemPosition,
-        RingRole, Valid,
-    };
-    use geo_types::{
-        Coord, Geometry, GeometryCollection, LineString, MultiLineString, MultiPoint, MultiPolygon,
-        Point, Polygon,
-    };
+    use crate::{CoordinatePosition, Problem, ProblemAtPosition, ProblemPosition, RingRole, Valid};
+    use geo_types::{Coord, LineString, Polygon};
 
     #[test]
     fn test_polygon_valid() {

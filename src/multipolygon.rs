@@ -124,7 +124,7 @@ mod tests {
         CoordinatePosition, GeometryPosition, Problem, ProblemAtPosition, ProblemPosition,
         RingRole, Valid,
     };
-    use geo_types::{Coord, LineString, MultiPolygon, Point, Polygon};
+    use geo_types::{LineString, MultiPolygon, Polygon};
 
     #[test]
     fn test_multipolygon_invalid() {

@@ -35,13 +35,12 @@ pub(crate) fn linestring_has_self_intersection(geom: &LineString) -> bool {
     // to compute the intersection, see if it is a single point or not, etc.
     for (i, line) in geom.lines().enumerate() {
         for (j, other_line) in geom.lines().enumerate() {
-            if i != j {
-                if line.intersects(&other_line)
-                    && line.start != other_line.end
-                    && line.end != other_line.start
-                {
-                    return true;
-                }
+            if i != j
+                && line.intersects(&other_line)
+                && line.start != other_line.end
+                && line.end != other_line.start
+            {
+                return true;
             }
         }
     }
