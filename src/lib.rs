@@ -1,49 +1,97 @@
-use geo::Intersects;
+mod tests;
+mod utils;
+
+use geo::coordinate_position::CoordPos;
+use geo::dimensions::Dimensions;
 use geo::{Contains, RemoveRepeatedPoints};
+use geo::{Intersects, Relate};
 use geo_types::{
     Coord, Geometry, GeometryCollection, LineString, MultiLineString, MultiPoint, MultiPolygon,
     Point, Polygon,
 };
+use std::fmt::Display;
 
-fn check_coord_is_not_finite(geom: &Coord) -> bool {
-    if geom.x.is_finite() && geom.y.is_finite() {
-        return false;
-    }
-    true
+#[derive(Debug, PartialEq)]
+/// The role of a ring in a polygon.
+pub enum RingRole {
+    Exterior,
+    Interior(usize),
 }
 
-fn check_too_few_points(geom: &LineString, is_ring: bool) -> bool {
-    let n_pts = if is_ring { 4 } else { 2 };
-    if geom.remove_repeated_points().0.len() < n_pts {
-        return true;
-    }
-    false
+#[derive(Debug, PartialEq)]
+/// The position of the problem in a multi-geometry.
+pub struct GeometryPosition(usize);
+
+#[derive(Debug, PartialEq)]
+/// The coordinate position of the problem in the geometry.
+pub struct CoordinatePosition(usize);
+
+#[derive(Debug, PartialEq)]
+/// The position of the problem in the geometry.
+pub enum ProblemPosition {
+    Point,
+    MultiPoint(GeometryPosition),
+    LineString(CoordinatePosition),
+    MultiLineString(GeometryPosition, CoordinatePosition),
+    Polygon(RingRole, CoordinatePosition),
+    MultiPolygon(GeometryPosition, RingRole, CoordinatePosition),
 }
 
-trait Valid {
+#[derive(Debug, PartialEq)]
+/// The type of problem encountered.
+pub enum Problem {
+    NotFinite,
+    TooFewPoints,
+    SelfIntersection,
+    IntersectingRingsOnALine,
+    IntersectingRingsOnAnArea,
+    InteriorRingNotContainedInExteriorRing,
+    ElementsOverlaps,
+}
+
+#[derive(Debug, PartialEq)]
+/// A problem, at a given position, encountered when checking the validity of a geometry.
+pub struct ProblemAtPosition(Problem, ProblemPosition);
+
+impl Display for ProblemAtPosition {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?} at {:?}", self.0, self.1)
+    }
+}
+
+/// All the problems encountered when checking the validity of a geometry.
+pub struct ProblemReport(Vec<ProblemAtPosition>);
+
+/// A trait to check if a geometry is valid and report the reason(s) of invalidity.
+pub trait Valid {
+    /// Check if the geometry is valid.
     fn is_valid(&self) -> bool;
-    fn invalidity_reason(&self) -> Option<String>;
+    /// Return the reason(s) of invalidity, or None if valid
+    fn invalidity_reason(&self) -> Option<Vec<ProblemAtPosition>>;
 }
 
 impl Valid for Coord {
     fn is_valid(&self) -> bool {
-        if check_coord_is_not_finite(&self) {
+        if utils::check_coord_is_not_finite(&self) {
             return false;
         }
         true
     }
-    fn invalidity_reason(&self) -> Option<String> {
+    fn invalidity_reason(&self) -> Option<Vec<ProblemAtPosition>> {
         let mut reason = Vec::new();
 
-        if check_coord_is_not_finite(&self) {
-            reason.push("Coordinates have to be finite numbers.".to_string());
+        if utils::check_coord_is_not_finite(&self) {
+            reason.push(ProblemAtPosition(
+                Problem::NotFinite,
+                ProblemPosition::Point,
+            ));
         }
 
         // Return the reason(s) of invalidity, or None if valid
         if reason.is_empty() {
             None
         } else {
-            Some(reason.join("\n"))
+            Some(reason)
         }
     }
 }
@@ -54,7 +102,7 @@ impl Valid for Point {
     fn is_valid(&self) -> bool {
         self.0.is_valid()
     }
-    fn invalidity_reason(&self) -> Option<String> {
+    fn invalidity_reason(&self) -> Option<Vec<ProblemAtPosition>> {
         self.0.invalidity_reason()
     }
 }
@@ -71,14 +119,14 @@ impl Valid for MultiPoint {
         true
     }
 
-    fn invalidity_reason(&self) -> Option<String> {
+    fn invalidity_reason(&self) -> Option<Vec<ProblemAtPosition>> {
         let mut reason = Vec::new();
 
         for (i, point) in self.0.iter().enumerate() {
-            if check_coord_is_not_finite(&point.0) {
-                reason.push(format!(
-                    "Coordinates (of point {}) have to be finite numbers.",
-                    i
+            if utils::check_coord_is_not_finite(&point.0) {
+                reason.push(ProblemAtPosition(
+                    Problem::NotFinite,
+                    ProblemPosition::MultiPoint(GeometryPosition(i)),
                 ));
             }
         }
@@ -86,7 +134,7 @@ impl Valid for MultiPoint {
         if reason.is_empty() {
             None
         } else {
-            Some(reason.join("\n"))
+            Some(reason)
         }
     }
 }
@@ -96,7 +144,7 @@ impl Valid for MultiPoint {
 /// Here we also check that all its points are finite numbers.
 impl Valid for LineString {
     fn is_valid(&self) -> bool {
-        if check_too_few_points(self, false) {
+        if utils::check_too_few_points(self, false) {
             return false;
         }
         for coord in &self.0 {
@@ -107,19 +155,22 @@ impl Valid for LineString {
         true
     }
 
-    fn invalidity_reason(&self) -> Option<String> {
+    fn invalidity_reason(&self) -> Option<Vec<ProblemAtPosition>> {
         let mut reason = Vec::new();
 
         // Perform the various checks
-        if check_too_few_points(self, false) {
-            reason.push("LineString must have at least 2 different points".to_string());
+        if utils::check_too_few_points(self, false) {
+            reason.push(ProblemAtPosition(
+                Problem::TooFewPoints,
+                ProblemPosition::LineString(CoordinatePosition(0)),
+            ));
         }
 
         for (i, point) in self.0.iter().enumerate() {
-            if check_coord_is_not_finite(point) {
-                reason.push(format!(
-                    "Coordinates (of point {}) have to be finite numbers.",
-                    i
+            if utils::check_coord_is_not_finite(point) {
+                reason.push(ProblemAtPosition(
+                    Problem::NotFinite,
+                    ProblemPosition::LineString(CoordinatePosition(i)),
                 ));
             }
         }
@@ -128,7 +179,7 @@ impl Valid for LineString {
         if reason.is_empty() {
             None
         } else {
-            Some(reason.join("\n"))
+            Some(reason)
         }
     }
 }
@@ -143,43 +194,60 @@ impl Valid for MultiLineString {
         }
         true
     }
-    fn invalidity_reason(&self) -> Option<String> {
+    fn invalidity_reason(&self) -> Option<Vec<ProblemAtPosition>> {
         let mut reason = Vec::new();
 
         for (j, line) in self.0.iter().enumerate() {
-            // Perform the various checks
-            if check_too_few_points(line, false) {
-                reason.push(format!("LineString {} must have at least 2 points", j));
-            }
-
-            for (i, point) in line.0.iter().enumerate() {
-                if check_coord_is_not_finite(point) {
-                    reason.push(format!(
-                        "Coordinates (of point {}, on LineString {}) have to be finite numbers.",
-                        i, j
-                    ));
+            let temp_reason = line.invalidity_reason();
+            if let Some(temp_reason) = temp_reason {
+                for ProblemAtPosition(problem, position) in temp_reason {
+                    match position {
+                        ProblemPosition::LineString(coord_pos) => {
+                            reason.push(ProblemAtPosition(
+                                problem,
+                                ProblemPosition::MultiLineString(GeometryPosition(j), coord_pos),
+                            ));
+                        }
+                        _ => unreachable!(),
+                    }
                 }
             }
+            // // Perform the various checks
+            // if check_too_few_points(line, false) {
+            //     reason.push((
+            //         Problem::TooFewPoints,
+            //         ProblemPosition::MultiLineString(GeometryPosition(j), CoordinatePosition(0)),
+            //     ));
+            // }
+            //
+            // for (i, point) in line.0.iter().enumerate() {
+            //     if check_coord_is_not_finite(point) {
+            //         reason.push((
+            //             Problem::NotFinite,
+            //             ProblemPosition::MultiLineString(GeometryPosition(j), CoordinatePosition(i)),
+            //         ));
+            //     }
+            // }
         }
         // Return the reason(s) of invalidity, or None if valid
         if reason.is_empty() {
             None
         } else {
-            Some(reason.join("\n"))
+            Some(reason)
         }
     }
 }
 
 /// Polygon must follow the following rules to be valid:
-/// - [ ] the polygon boundary rings (the exterior shell ring and interior hole rings) are simple (do not cross or self-touch). Because of this a polygon cannnot have cut lines, spikes or loops. This implies that polygon holes must be represented as interior rings, rather than by the exterior ring self-touching (a so-called "inverted hole").
-/// - [ ] boundary rings do not cross
-/// - [ ] boundary rings may touch at points but only as a tangent (i.e. not in a line)
+/// - [x] the polygon boundary rings (the exterior shell ring and interior hole rings) are simple (do not cross or self-touch). Because of this a polygon cannnot have cut lines, spikes or loops. This implies that polygon holes must be represented as interior rings, rather than by the exterior ring self-touching (a so-called "inverted hole").
+/// - [x] boundary rings do not cross
+/// - [x] boundary rings may touch at points but only as a tangent (i.e. not in a line)
 /// - [x] interior rings are contained in the exterior ring
 /// - [ ] the polygon interior is simply connected (i.e. the rings must not touch in a way that splits the polygon into more than one part)
 impl Valid for Polygon {
     fn is_valid(&self) -> bool {
         for ring in self.interiors().iter().chain([self.exterior()]) {
-            if check_too_few_points(ring, true) {
+            if utils::check_too_few_points(ring, true) {
                 return false;
             }
             for coord in ring {
@@ -187,85 +255,165 @@ impl Valid for Polygon {
                     return false;
                 }
             }
-        }
-        for interior in self.interiors() {
-            if !self.exterior().contains(interior) {
+            if utils::linestring_has_self_intersection(ring) {
                 return false;
             }
-            for interior2 in self.interiors() {
-                if interior != interior2 && interior.intersects(interior2) {
-                    return false;
-                }
-            }
-            // if self.exterior().intersects(interior) {
-            //     return false;
-            // }
         }
 
+        let polygon_exterior = Polygon::new(self.exterior().clone(), vec![]);
+
+        for interior_ring in self.interiors() {
+            // geo::contains::Contains return true if the interior
+            // is contained in the exterior even if they touches on one or more points
+            if !polygon_exterior.contains(interior_ring) {
+                return false;
+            }
+
+            let im = polygon_exterior.relate(interior_ring);
+
+            // Interior ring and exterior ring may only touch at point (not as a line)
+            // and not cross
+            match im.get(CoordPos::OnBoundary, CoordPos::Inside) {
+                Dimensions::OneDimensional | Dimensions::TwoDimensional => {
+                    return false;
+                }
+                _ => {}
+            };
+
+            let pol_interior1 = Polygon::new(interior_ring.clone(), vec![]);
+
+            for (i, interior2) in self.interiors().iter().enumerate() {
+                if interior_ring != interior2 {
+                    let pol_interior2 = Polygon::new(interior2.clone(), vec![]);
+                    let intersection_matrix = pol_interior1.relate(&pol_interior2);
+                    match intersection_matrix.get(CoordPos::Inside, CoordPos::Inside) {
+                        Dimensions::TwoDimensional => {
+                            return false;
+                        }
+                        _ => {}
+                    }
+                    match intersection_matrix.get(CoordPos::OnBoundary, CoordPos::OnBoundary) {
+                        Dimensions::OneDimensional => {
+                            return false;
+                        }
+                        _ => {}
+                    }
+                }
+            }
+        }
         true
     }
-    fn invalidity_reason(&self) -> Option<String> {
+    fn invalidity_reason(&self) -> Option<Vec<ProblemAtPosition>> {
         let mut reason = Vec::new();
 
         for (j, ring) in self.interiors().iter().chain([self.exterior()]).enumerate() {
-            let role = if j == 0 { "Exterior" } else { "Interior" };
             // Perform the various checks
-            if check_too_few_points(ring, true) {
-                reason.push(format!(
-                    "{} ring {}must have at least 3 different points",
-                    role,
-                    if j == 0 {
-                        "".to_string()
-                    } else {
-                        format!("{} ", j - 1)
-                    }
+            if utils::check_too_few_points(ring, true) {
+                reason.push(ProblemAtPosition(
+                    Problem::TooFewPoints,
+                    ProblemPosition::Polygon(
+                        if j == 0 {
+                            RingRole::Exterior
+                        } else {
+                            RingRole::Interior(j)
+                        },
+                        CoordinatePosition(0),
+                    ),
+                ));
+            }
+
+            if utils::linestring_has_self_intersection(ring) {
+                reason.push(ProblemAtPosition(
+                    Problem::SelfIntersection,
+                    ProblemPosition::Polygon(
+                        if j == 0 {
+                            RingRole::Exterior
+                        } else {
+                            RingRole::Interior(j)
+                        },
+                        CoordinatePosition(0),
+                    ),
                 ));
             }
 
             for (i, point) in ring.0.iter().enumerate() {
-                if check_coord_is_not_finite(point) {
-                    reason.push(format!(
-                        "Coordinates (of point {}, on {} ring{}) have to be finite numbers.",
-                        i,
-                        role,
-                        if j == 0 {
-                            "".to_string()
-                        } else {
-                            format!("{} ", j - 1)
-                        }
+                if utils::check_coord_is_not_finite(point) {
+                    reason.push(ProblemAtPosition(
+                        Problem::NotFinite,
+                        ProblemPosition::Polygon(
+                            if j == 0 {
+                                RingRole::Exterior
+                            } else {
+                                RingRole::Interior(j)
+                            },
+                            CoordinatePosition(i),
+                        ),
                     ));
                 }
             }
         }
 
+        let polygon_exterior = Polygon::new(self.exterior().clone(), vec![]);
+
         for (j, interior) in self.interiors().iter().enumerate() {
-            if !self.exterior().contains(interior) {
-                reason.push(format!(
-                    "Interior ring {} must be contained in the exterior ring",
-                    j
+            if !polygon_exterior.contains(interior) {
+                reason.push(ProblemAtPosition(
+                    Problem::InteriorRingNotContainedInExteriorRing,
+                    ProblemPosition::Polygon(RingRole::Interior(j), CoordinatePosition(0)),
                 ));
             }
-            for (i, interior2) in self.interiors().iter().enumerate() {
-                if j != i && interior.intersects(interior2) {
-                    reason.push(format!(
-                        "Interior ring {} must not intersect the interior ring {}",
-                        j, i,
+
+            let im = polygon_exterior.relate(interior);
+
+            // Interior ring and exterior ring may only touch at point (not as a line)
+            // and not cross
+            match im.get(CoordPos::OnBoundary, CoordPos::Inside) {
+                Dimensions::OneDimensional => {
+                    reason.push(ProblemAtPosition(
+                        Problem::IntersectingRingsOnALine,
+                        ProblemPosition::Polygon(RingRole::Interior(j), CoordinatePosition(0)),
                     ));
                 }
+                _ => {}
+            };
+            let pol_interior1 = Polygon::new(interior.clone(), vec![]);
+            for (i, interior2) in self.interiors().iter().enumerate() {
+                if j != i {
+                    let pol_interior2 = Polygon::new(interior2.clone(), vec![]);
+                    let intersection_matrix = pol_interior1.relate(&pol_interior2);
+                    match intersection_matrix.get(CoordPos::Inside, CoordPos::Inside) {
+                        Dimensions::TwoDimensional => {
+                            reason.push(ProblemAtPosition(
+                                Problem::IntersectingRingsOnAnArea,
+                                ProblemPosition::Polygon(
+                                    RingRole::Interior(j),
+                                    CoordinatePosition(0),
+                                ),
+                            ));
+                        }
+                        _ => {}
+                    }
+                    match intersection_matrix.get(CoordPos::OnBoundary, CoordPos::OnBoundary) {
+                        Dimensions::OneDimensional => {
+                            reason.push(ProblemAtPosition(
+                                Problem::IntersectingRingsOnALine,
+                                ProblemPosition::Polygon(
+                                    RingRole::Interior(j),
+                                    CoordinatePosition(0),
+                                ),
+                            ));
+                        }
+                        _ => {}
+                    }
+                }
             }
-            // if self.exterior().intersects(interior) {
-            //     reason.push(format!(
-            //         "Interior ring {} must not intersect the exterior ring",
-            //         j
-            //     ));
-            // }
         }
 
         // Return the reason(s) of invalidity, or None if valid
         if reason.is_empty() {
             None
         } else {
-            Some(reason.join("\n"))
+            Some(reason)
         }
     }
 }
@@ -273,7 +421,7 @@ impl Valid for Polygon {
 /// MultiPolygon is valid if:
 /// - [x] all its polygons are valid,
 /// - [x] elements do not overlaps (i.e. their interiors must not intersect)
-/// - [ ] elements touch only at points
+/// - [x] elements touch only at points
 impl Valid for MultiPolygon {
     fn is_valid(&self) -> bool {
         for (j, pol) in self.0.iter().enumerate() {
@@ -281,203 +429,64 @@ impl Valid for MultiPolygon {
                 return false;
             }
             for (i, pol2) in self.0.iter().enumerate() {
-                if j != i && pol.intersects(pol2) {
-                    return false;
+                if j != i {
+                    let im = pol.relate(pol2);
+                    match im.get(CoordPos::Inside, CoordPos::Inside) {
+                        Dimensions::TwoDimensional => {
+                            return false;
+                        }
+                        _ => {}
+                    }
+                    match im.get(CoordPos::OnBoundary, CoordPos::OnBoundary) {
+                        Dimensions::OneDimensional => {
+                            return false;
+                        }
+                        _ => {}
+                    }
                 }
             }
         }
         true
     }
-    fn invalidity_reason(&self) -> Option<String> {
-        None
+    fn invalidity_reason(&self) -> Option<Vec<ProblemAtPosition>> {
+        // Loop over all the polygons, collect the reasons of invalidity
+        // and change the ProblemPosition to reflect the MultiPolygon
+        let mut reason = Vec::new();
+
+        for (j, polygon) in self.0.iter().enumerate() {
+            let temp_reason = polygon.invalidity_reason();
+            if let Some(temp_reason) = temp_reason {
+                for ProblemAtPosition(problem, position) in temp_reason {
+                    match position {
+                        ProblemPosition::Polygon(ring_role, coord_pos) => {
+                            reason.push(ProblemAtPosition(
+                                problem,
+                                ProblemPosition::MultiPolygon(
+                                    GeometryPosition(j),
+                                    ring_role,
+                                    coord_pos,
+                                ),
+                            ));
+                        }
+                        _ => unreachable!(),
+                    }
+                }
+            }
+        }
+        // Return the reason(s) of invalidity, or None if valid
+        if reason.is_empty() {
+            None
+        } else {
+            Some(reason)
+        }
     }
 }
 
 impl Valid for GeometryCollection {
     fn is_valid(&self) -> bool {
-        // for geom in self.0.iter() {
-        //     if !geom.is_valid() {
-        //         return false;
-        //     }
-        // }
         true
     }
-    fn invalidity_reason(&self) -> Option<String> {
+    fn invalidity_reason(&self) -> Option<Vec<ProblemAtPosition>> {
         None
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use geo_types::Geometry;
-
-    #[test]
-    fn test_point_valid() {
-        let p = Point::new(0., 0.);
-        assert!(p.is_valid());
-        assert!(p.invalidity_reason().is_none());
-    }
-
-    #[test]
-    fn test_point_invalid() {
-        let p = Point::new(f64::NAN, f64::NAN);
-        assert!(!p.is_valid());
-        assert_eq!(
-            p.invalidity_reason(),
-            Some("Coordinates have to be finite numbers.".to_string())
-        );
-    }
-
-    #[test]
-    fn test_multipoint() {
-        let mp = MultiPoint(vec![Point::new(0., 0.), Point::new(1., 1.)]);
-        assert!(mp.is_valid());
-        assert!(mp.invalidity_reason().is_none());
-    }
-
-    #[test]
-    fn test_linestring_valid() {
-        let ls = LineString(vec![Coord { x: 0., y: 0. }, Coord { x: 1., y: 1. }]);
-        assert!(ls.is_valid());
-        assert!(ls.invalidity_reason().is_none());
-    }
-
-    #[test]
-    fn test_linestring_invalid_too_few_points_without_duplicate() {
-        let ls = LineString(vec![Coord { x: 0., y: 0. }]);
-        assert!(!ls.is_valid());
-        assert_eq!(
-            ls.invalidity_reason(),
-            Some("LineString must have at least 2 different points".to_string())
-        );
-    }
-
-    #[test]
-    fn test_linestring_invalid_too_few_points_with_duplicate() {
-        let ls = LineString(vec![Coord { x: 0., y: 0. }, Coord { x: 0., y: 0. }]);
-        assert!(!ls.is_valid());
-        assert_eq!(
-            ls.invalidity_reason(),
-            Some("LineString must have at least 2 different points".to_string())
-        );
-    }
-
-    #[test]
-    fn test_multilinestring_valid() {
-        let mls = MultiLineString(vec![
-            LineString(vec![Coord { x: 0., y: 0. }, Coord { x: 1., y: 1. }]),
-            LineString(vec![Coord { x: 3., y: 1. }, Coord { x: 4., y: 1. }]),
-        ]);
-        assert!(mls.is_valid());
-        assert!(mls.invalidity_reason().is_none());
-    }
-
-    #[test]
-    fn test_polygon_valid() {
-        // Unclosed rings are automatically closed by geo_types
-        // so the following should be valid
-        let p = Polygon::new(
-            LineString(vec![
-                Coord { x: 0., y: 0. },
-                Coord { x: 1., y: 1. },
-                Coord { x: 0., y: 1. },
-            ]),
-            vec![],
-        );
-        assert!(p.is_valid());
-        assert!(p.invalidity_reason().is_none());
-    }
-
-    #[test]
-    fn test_polygon_invalid_too_few_point_exterior_ring() {
-        // Unclosed rings are automatically closed by geo_types
-        // but there is still two few points in this ring
-        // to be a non-empty polygon
-        let p = Polygon::new(
-            LineString(vec![Coord { x: 0., y: 0. }, Coord { x: 1., y: 1. }]),
-            vec![],
-        );
-        assert!(!p.is_valid());
-        assert_eq!(
-            p.invalidity_reason(),
-            Some("Exterior ring must have at least 3 different points".to_string())
-        );
-    }
-
-    #[test]
-    fn test_polygon_invalid_interior_intersect_exterior() {
-        // Unclosed rings are automatically closed by geo_types
-        // but there is still two few points in this ring
-        // to be a non-empty polygon
-        let p = Polygon::new(
-            LineString::from(vec![
-                (0.5, 0.5),
-                (3., 0.5),
-                (3., 2.5),
-                (0.5, 2.5),
-                (0.5, 0.5),
-            ]),
-            vec![LineString::from(vec![
-                (1., 1.),
-                (1., 2.),
-                (2.5, 2.),
-                (3.5, 1.),
-                (1., 1.),
-            ])],
-        );
-        assert!(!p.is_valid());
-        assert_eq!(
-            p.invalidity_reason(),
-            Some("Interior ring 0 must be contained in the exterior ring".to_string())
-        );
-    }
-
-    #[test]
-    fn test_multipolygon() {
-        //
-        let mp = MultiPolygon(vec![
-            Polygon::new(
-                LineString::from(vec![
-                    (0.5, 0.5),
-                    (3., 0.5),
-                    (3., 2.5),
-                    (0.5, 2.5),
-                    (0.5, 0.5),
-                ]),
-                vec![LineString::from(vec![
-                    (1., 1.),
-                    (1., 2.),
-                    (2.5, 2.),
-                    (3.5, 1.),
-                    (1., 1.),
-                ])],
-            ),
-            Polygon::new(
-                LineString::from(vec![
-                    (0.5, 0.5),
-                    (3., 0.5),
-                    (3., 2.5),
-                    (0.5, 2.5),
-                    (0.5, 0.5),
-                ]),
-                vec![LineString::from(vec![
-                    (1., 1.),
-                    (1., 2.),
-                    (2.5, 2.),
-                    (3.5, 1.),
-                    (1., 1.),
-                ])],
-            ),
-        ]);
-        assert!(!mp.is_valid());
-        // assert!(!mp.invalidity_reason().is_none());
-    }
-
-    #[test]
-    fn test_geometrycollection() {
-        let gc = GeometryCollection(vec![Geometry::Point(Point::new(0., 0.))]);
-        assert!(gc.is_valid());
-        assert!(gc.invalidity_reason().is_none());
     }
 }
