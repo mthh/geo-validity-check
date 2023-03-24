@@ -10,7 +10,7 @@ impl Valid for Rect {
         }
         true
     }
-    fn invalidity_reason(&self) -> Option<Vec<ProblemAtPosition>> {
+    fn explain_invalidity(&self) -> Option<Vec<ProblemAtPosition>> {
         let mut reason = Vec::new();
 
         if utils::check_coord_is_not_finite(&self.min()) {

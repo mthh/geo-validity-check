@@ -90,5 +90,5 @@ pub trait Valid {
     /// Check if the geometry is valid.
     fn is_valid(&self) -> bool;
     /// Return the reason(s) of invalidity, or None if valid
-    fn invalidity_reason(&self) -> Option<Vec<ProblemAtPosition>>;
+    fn explain_invalidity(&self) -> Option<Vec<ProblemAtPosition>>;
 }

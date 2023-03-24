@@ -7,7 +7,7 @@ Expose a `Valid` trait to check if rust [geo-types](https://crates.io/crates/geo
 ```rust
 trait Valid {
     fn is_valid(&self) -> bool;
-    fn invalidity_reason(&self) -> Option<Vec<ProblemAtPosition>>;
+    fn explain_invalidity(&self) -> Option<Vec<ProblemAtPosition>>;
 }
 ```
 
@@ -19,7 +19,7 @@ The result of the invalidity reason can be formatted as a string as it implement
 - [x] `MultiPoint` is made of valid points
 - [x] `Rect`, `Line` and `Triangle` are made of valid coords
 - [x] `Triangle` are not empty or degenerate (i.e. all points are different and not collinear)
-- [ ] `Line` is not of 0-length (i.e. both points are not the same)
+- [x] `Line` is not of 0-length (i.e. both points are not the same)
 - [x] `LineString` is made of valid points
 - [x] `LineString` is not empty
 - [x] `LineString` has at least two different points

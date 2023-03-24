@@ -40,13 +40,13 @@ impl Valid for MultiPolygon {
         }
         true
     }
-    fn invalidity_reason(&self) -> Option<Vec<ProblemAtPosition>> {
+    fn explain_invalidity(&self) -> Option<Vec<ProblemAtPosition>> {
         let mut reason = Vec::new();
 
         // Loop over all the polygons, collect the reasons of invalidity
         // and change the ProblemPosition to reflect the MultiPolygon
         for (j, polygon) in self.0.iter().enumerate() {
-            let temp_reason = polygon.invalidity_reason();
+            let temp_reason = polygon.explain_invalidity();
             if let Some(temp_reason) = temp_reason {
                 for ProblemAtPosition(problem, position) in temp_reason {
                     match position {
@@ -167,7 +167,7 @@ mod tests {
         ]);
         assert!(!mp.is_valid());
         assert_eq!(
-            mp.invalidity_reason(),
+            mp.explain_invalidity(),
             Some(vec![
                 ProblemAtPosition(
                     Problem::InteriorRingNotContainedInExteriorRing,

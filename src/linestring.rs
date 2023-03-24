@@ -17,7 +17,7 @@ impl Valid for LineString {
         true
     }
 
-    fn invalidity_reason(&self) -> Option<Vec<ProblemAtPosition>> {
+    fn explain_invalidity(&self) -> Option<Vec<ProblemAtPosition>> {
         let mut reason = Vec::new();
 
         // Perform the various checks
@@ -55,7 +55,20 @@ mod tests {
     fn test_linestring_valid() {
         let ls = LineString(vec![Coord { x: 0., y: 0. }, Coord { x: 1., y: 1. }]);
         assert!(ls.is_valid());
-        assert!(ls.invalidity_reason().is_none());
+        assert!(ls.explain_invalidity().is_none());
+    }
+
+    #[test]
+    fn test_linestring_invalid_empty() {
+        let ls = LineString(vec![]);
+        assert!(!ls.is_valid());
+        assert_eq!(
+            ls.explain_invalidity(),
+            Some(vec![ProblemAtPosition(
+                Problem::TooFewPoints,
+                ProblemPosition::LineString(CoordinatePosition(0))
+            )])
+        );
     }
 
     #[test]
@@ -63,7 +76,7 @@ mod tests {
         let ls = LineString(vec![Coord { x: 0., y: 0. }]);
         assert!(!ls.is_valid());
         assert_eq!(
-            ls.invalidity_reason(),
+            ls.explain_invalidity(),
             Some(vec![ProblemAtPosition(
                 Problem::TooFewPoints,
                 ProblemPosition::LineString(CoordinatePosition(0))
@@ -76,7 +89,7 @@ mod tests {
         let ls = LineString(vec![Coord { x: 0., y: 0. }, Coord { x: 0., y: 0. }]);
         assert!(!ls.is_valid());
         assert_eq!(
-            ls.invalidity_reason(),
+            ls.explain_invalidity(),
             Some(vec![ProblemAtPosition(
                 Problem::TooFewPoints,
                 ProblemPosition::LineString(CoordinatePosition(0))

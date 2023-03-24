@@ -71,7 +71,7 @@ impl Valid for Polygon {
         }
         true
     }
-    fn invalidity_reason(&self) -> Option<Vec<ProblemAtPosition>> {
+    fn explain_invalidity(&self) -> Option<Vec<ProblemAtPosition>> {
         let mut reason = Vec::new();
 
         for (j, ring) in self.interiors().iter().chain([self.exterior()]).enumerate() {
@@ -204,7 +204,7 @@ mod tests {
             vec![],
         );
         assert!(p.is_valid());
-        assert!(p.invalidity_reason().is_none());
+        assert!(p.explain_invalidity().is_none());
     }
 
     #[test]
@@ -224,7 +224,7 @@ mod tests {
         );
 
         assert!(p.is_valid());
-        assert!(p.invalidity_reason().is_none());
+        assert!(p.explain_invalidity().is_none());
     }
 
     #[test]
@@ -240,7 +240,7 @@ mod tests {
         );
 
         assert!(p.is_valid());
-        assert!(p.invalidity_reason().is_none());
+        assert!(p.explain_invalidity().is_none());
     }
 
     #[test]
@@ -264,7 +264,7 @@ mod tests {
 
         assert!(!p.is_valid());
         assert_eq!(
-            p.invalidity_reason(),
+            p.explain_invalidity(),
             Some(vec![
                 ProblemAtPosition(
                     Problem::IntersectingRingsOnALine,
@@ -299,7 +299,7 @@ mod tests {
 
         assert!(!p.is_valid());
         assert_eq!(
-            p.invalidity_reason(),
+            p.explain_invalidity(),
             Some(vec![
                 ProblemAtPosition(
                     Problem::IntersectingRingsOnAnArea,
@@ -332,7 +332,7 @@ mod tests {
 
         assert!(!p.is_valid());
         assert_eq!(
-            p.invalidity_reason(),
+            p.explain_invalidity(),
             Some(vec![ProblemAtPosition(
                 Problem::IntersectingRingsOnALine,
                 ProblemPosition::Polygon(RingRole::Interior(0), CoordinatePosition(-1))
@@ -351,7 +351,7 @@ mod tests {
         );
         assert!(!p.is_valid());
         assert_eq!(
-            p.invalidity_reason(),
+            p.explain_invalidity(),
             Some(vec![ProblemAtPosition(
                 Problem::TooFewPoints,
                 ProblemPosition::Polygon(RingRole::Exterior, CoordinatePosition(1))
@@ -378,7 +378,7 @@ mod tests {
 
         assert!(!p.is_valid());
         assert_eq!(
-            p.invalidity_reason(),
+            p.explain_invalidity(),
             Some(vec![ProblemAtPosition(
                 Problem::SelfIntersection,
                 ProblemPosition::Polygon(RingRole::Exterior, CoordinatePosition(-1))
@@ -401,7 +401,7 @@ mod tests {
         );
         assert!(!p.is_valid());
         assert_eq!(
-            p.invalidity_reason(),
+            p.explain_invalidity(),
             Some(vec![ProblemAtPosition(
                 Problem::SelfIntersection,
                 ProblemPosition::Polygon(RingRole::Exterior, CoordinatePosition(-1))
@@ -429,7 +429,7 @@ mod tests {
         );
         assert!(!p.is_valid());
         assert_eq!(
-            p.invalidity_reason(),
+            p.explain_invalidity(),
             Some(vec![ProblemAtPosition(
                 Problem::InteriorRingNotContainedInExteriorRing,
                 ProblemPosition::Polygon(RingRole::Interior(0), CoordinatePosition(-1))

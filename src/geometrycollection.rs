@@ -11,13 +11,13 @@ impl Valid for GeometryCollection {
         }
         true
     }
-    fn invalidity_reason(&self) -> Option<Vec<ProblemAtPosition>> {
+    fn explain_invalidity(&self) -> Option<Vec<ProblemAtPosition>> {
         let mut reason = Vec::new();
 
         // Loop over all the geometries, collect the reasons of invalidity
         // and change the ProblemPosition to reflect the GeometryCollection
         for (i, geometry) in self.0.iter().enumerate() {
-            let temp_reason = geometry.invalidity_reason();
+            let temp_reason = geometry.explain_invalidity();
             if let Some(temp_reason) = temp_reason {
                 for ProblemAtPosition(problem, position) in temp_reason {
                     reason.push(ProblemAtPosition(
@@ -61,7 +61,7 @@ mod tests {
         ]);
         assert!(!gc.is_valid());
         assert_eq!(
-            gc.invalidity_reason(),
+            gc.explain_invalidity(),
             Some(vec![ProblemAtPosition(
                 Problem::TooFewPoints,
                 ProblemPosition::GeometryCollection(

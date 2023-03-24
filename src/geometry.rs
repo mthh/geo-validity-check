@@ -16,18 +16,18 @@ impl Valid for Geometry {
             Geometry::GeometryCollection(e) => e.is_valid(),
         }
     }
-    fn invalidity_reason(&self) -> Option<Vec<ProblemAtPosition>> {
+    fn explain_invalidity(&self) -> Option<Vec<ProblemAtPosition>> {
         match self {
-            Geometry::Point(e) => e.invalidity_reason(),
-            Geometry::Line(e) => e.invalidity_reason(),
-            Geometry::Rect(e) => e.invalidity_reason(),
-            Geometry::Triangle(e) => e.invalidity_reason(),
-            Geometry::LineString(e) => e.invalidity_reason(),
-            Geometry::Polygon(e) => e.invalidity_reason(),
-            Geometry::MultiPoint(e) => e.invalidity_reason(),
-            Geometry::MultiLineString(e) => e.invalidity_reason(),
-            Geometry::MultiPolygon(e) => e.invalidity_reason(),
-            Geometry::GeometryCollection(e) => e.invalidity_reason(),
+            Geometry::Point(e) => e.explain_invalidity(),
+            Geometry::Line(e) => e.explain_invalidity(),
+            Geometry::Rect(e) => e.explain_invalidity(),
+            Geometry::Triangle(e) => e.explain_invalidity(),
+            Geometry::LineString(e) => e.explain_invalidity(),
+            Geometry::Polygon(e) => e.explain_invalidity(),
+            Geometry::MultiPoint(e) => e.explain_invalidity(),
+            Geometry::MultiLineString(e) => e.explain_invalidity(),
+            Geometry::MultiPolygon(e) => e.explain_invalidity(),
+            Geometry::GeometryCollection(e) => e.explain_invalidity(),
         }
     }
 }

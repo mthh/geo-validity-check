@@ -11,11 +11,11 @@ impl Valid for MultiLineString {
         }
         true
     }
-    fn invalidity_reason(&self) -> Option<Vec<ProblemAtPosition>> {
+    fn explain_invalidity(&self) -> Option<Vec<ProblemAtPosition>> {
         let mut reason = Vec::new();
 
         for (j, line) in self.0.iter().enumerate() {
-            let temp_reason = line.invalidity_reason();
+            let temp_reason = line.explain_invalidity();
             if let Some(temp_reason) = temp_reason {
                 for ProblemAtPosition(problem, position) in temp_reason {
                     match position {
@@ -53,7 +53,7 @@ mod tests {
             LineString(vec![Coord { x: 3., y: 1. }, Coord { x: 4., y: 1. }]),
         ]);
         assert!(mls.is_valid());
-        assert!(mls.invalidity_reason().is_none());
+        assert!(mls.explain_invalidity().is_none());
     }
 
     #[test]
@@ -66,7 +66,7 @@ mod tests {
         ]);
         assert!(!mls.is_valid());
         assert_eq!(
-            mls.invalidity_reason(),
+            mls.explain_invalidity(),
             Some(vec![ProblemAtPosition(
                 Problem::TooFewPoints,
                 ProblemPosition::MultiLineString(GeometryPosition(1), CoordinatePosition(0))

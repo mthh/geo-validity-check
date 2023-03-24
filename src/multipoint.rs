@@ -13,7 +13,7 @@ impl Valid for MultiPoint {
         true
     }
 
-    fn invalidity_reason(&self) -> Option<Vec<ProblemAtPosition>> {
+    fn explain_invalidity(&self) -> Option<Vec<ProblemAtPosition>> {
         let mut reason = Vec::new();
 
         for (i, point) in self.0.iter().enumerate() {
@@ -42,7 +42,7 @@ mod tests {
     fn test_multipoint_valid() {
         let mp = MultiPoint(vec![Point::new(0., 0.), Point::new(1., 1.)]);
         assert!(mp.is_valid());
-        assert!(mp.invalidity_reason().is_none());
+        assert!(mp.explain_invalidity().is_none());
     }
 
     #[test]
@@ -53,7 +53,7 @@ mod tests {
         ]);
         assert!(!mp.is_valid());
         assert_eq!(
-            mp.invalidity_reason(),
+            mp.explain_invalidity(),
             Some(vec![
                 ProblemAtPosition(
                     Problem::NotFinite,
