@@ -436,4 +436,73 @@ mod tests {
             )])
         );
     }
+
+    #[test]
+    fn test_polygon_invalid_interior_ring_contained_in_interior_ring() {
+        // The following polygon contains an interior ring that is contained
+        // in another interior ring.
+        let exterior = LineString::from(vec![
+            (0.0, 0.0),
+            (10.0, 0.0),
+            (10.0, 10.0),
+            (0.0, 10.0),
+            (0.0, 0.0),
+        ]);
+        let interior1 = LineString::from(vec![
+            (1.0, 1.0),
+            (1.0, 9.0),
+            (9.0, 9.0),
+            (9.0, 1.0),
+            (1.0, 1.0),
+        ]);
+        let interior2 = LineString::from(vec![
+            (2.0, 2.0),
+            (2.0, 8.0),
+            (8.0, 8.0),
+            (8.0, 2.0),
+            (2.0, 2.0),
+        ]);
+
+        let p1 = Polygon::new(
+            exterior.clone(),
+            vec![
+                interior1.clone(),
+                interior2.clone(),
+            ],
+        );
+
+        assert!(!p1.is_valid());
+        assert_eq!(
+            p1.explain_invalidity(),
+            Some(vec![ProblemAtPosition(
+                Problem::IntersectingRingsOnAnArea,
+                ProblemPosition::Polygon(RingRole::Interior(0), CoordinatePosition(-1))
+            ),ProblemAtPosition(
+                Problem::IntersectingRingsOnAnArea,
+                ProblemPosition::Polygon(RingRole::Interior(1), CoordinatePosition(-1))
+            )])
+        );
+
+        // Let see if we switch the order of the interior rings
+        // (this is still invalid)
+        let p2 = Polygon::new(
+            exterior,
+            vec![
+                interior2,
+                interior1,
+            ],
+        );
+
+        assert!(!p2.is_valid());
+        assert_eq!(
+            p2.explain_invalidity(),
+            Some(vec![ProblemAtPosition(
+                Problem::IntersectingRingsOnAnArea,
+                ProblemPosition::Polygon(RingRole::Interior(0), CoordinatePosition(-1))
+            ),ProblemAtPosition(
+                Problem::IntersectingRingsOnAnArea,
+                ProblemPosition::Polygon(RingRole::Interior(1), CoordinatePosition(-1))
+            )])
+        );
+    }
 }

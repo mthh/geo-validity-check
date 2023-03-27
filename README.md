@@ -40,6 +40,7 @@ but also include some additional checks.
 
 ```rust
 use geo_validity_check::Valid;
+use geo_types::{Point, LineString, Polygon, MultiPolygon};
 
 let line1 = LineString::from(vec![(0., 0.), (1., 1.)]);
 let line2 = LineString::from(vec![(0., 0.), (0., 0.)]);
