@@ -4,7 +4,7 @@ use crate::{
 use geo::coordinate_position::CoordPos;
 use geo::dimensions::Dimensions;
 use geo::{Contains, GeoFloat, Relate};
-use geo_types::{Polygon};
+use geo_types::Polygon;
 use num_traits::FromPrimitive;
 
 /// In PostGIS, polygons must follow the following rules to be valid:
@@ -45,12 +45,12 @@ where
 
             // Interior ring and exterior ring may only touch at point (not as a line)
             // and not cross
-            match im.get(CoordPos::OnBoundary, CoordPos::Inside) {
-                Dimensions::OneDimensional | Dimensions::TwoDimensional => {
-                    return false;
-                }
-                _ => {}
-            };
+            let im_boundary_inside = im.get(CoordPos::OnBoundary, CoordPos::Inside);
+            if im_boundary_inside == Dimensions::OneDimensional
+                || im_boundary_inside == Dimensions::TwoDimensional
+            {
+                return false;
+            }
 
             let pol_interior1 = Polygon::new(interior_ring.clone(), vec![]);
 
@@ -58,17 +58,15 @@ where
                 if interior_ring != interior2 {
                     let pol_interior2 = Polygon::new(interior2.clone(), vec![]);
                     let intersection_matrix = pol_interior1.relate(&pol_interior2);
-                    match intersection_matrix.get(CoordPos::Inside, CoordPos::Inside) {
-                        Dimensions::TwoDimensional => {
-                            return false;
-                        }
-                        _ => {}
+                    if intersection_matrix.get(CoordPos::Inside, CoordPos::Inside)
+                        == Dimensions::TwoDimensional
+                    {
+                        return false;
                     }
-                    match intersection_matrix.get(CoordPos::OnBoundary, CoordPos::OnBoundary) {
-                        Dimensions::OneDimensional => {
-                            return false;
-                        }
-                        _ => {}
+                    if intersection_matrix.get(CoordPos::OnBoundary, CoordPos::OnBoundary)
+                        == Dimensions::OneDimensional
+                    {
+                        return false;
                     }
                 }
             }
@@ -139,43 +137,32 @@ where
 
             // Interior ring and exterior ring may only touch at point (not as a line)
             // and not cross
-            match im.get(CoordPos::OnBoundary, CoordPos::Inside) {
-                Dimensions::OneDimensional => {
-                    reason.push(ProblemAtPosition(
-                        Problem::IntersectingRingsOnALine,
-                        ProblemPosition::Polygon(RingRole::Interior(j), CoordinatePosition(-1)),
-                    ));
-                }
-                _ => {}
-            };
+            if im.get(CoordPos::OnBoundary, CoordPos::Inside) == Dimensions::OneDimensional {
+                reason.push(ProblemAtPosition(
+                    Problem::IntersectingRingsOnALine,
+                    ProblemPosition::Polygon(RingRole::Interior(j), CoordinatePosition(-1)),
+                ));
+            }
             let pol_interior1 = Polygon::new(interior.clone(), vec![]);
             for (i, interior2) in self.interiors().iter().enumerate() {
                 if j != i {
                     let pol_interior2 = Polygon::new(interior2.clone(), vec![]);
                     let intersection_matrix = pol_interior1.relate(&pol_interior2);
-                    match intersection_matrix.get(CoordPos::Inside, CoordPos::Inside) {
-                        Dimensions::TwoDimensional => {
-                            reason.push(ProblemAtPosition(
-                                Problem::IntersectingRingsOnAnArea,
-                                ProblemPosition::Polygon(
-                                    RingRole::Interior(j),
-                                    CoordinatePosition(-1),
-                                ),
-                            ));
-                        }
-                        _ => {}
+                    if intersection_matrix.get(CoordPos::Inside, CoordPos::Inside)
+                        == Dimensions::TwoDimensional
+                    {
+                        reason.push(ProblemAtPosition(
+                            Problem::IntersectingRingsOnAnArea,
+                            ProblemPosition::Polygon(RingRole::Interior(j), CoordinatePosition(-1)),
+                        ));
                     }
-                    match intersection_matrix.get(CoordPos::OnBoundary, CoordPos::OnBoundary) {
-                        Dimensions::OneDimensional => {
-                            reason.push(ProblemAtPosition(
-                                Problem::IntersectingRingsOnALine,
-                                ProblemPosition::Polygon(
-                                    RingRole::Interior(j),
-                                    CoordinatePosition(-1),
-                                ),
-                            ));
-                        }
-                        _ => {}
+                    if intersection_matrix.get(CoordPos::OnBoundary, CoordPos::OnBoundary)
+                        == Dimensions::OneDimensional
+                    {
+                        reason.push(ProblemAtPosition(
+                            Problem::IntersectingRingsOnALine,
+                            ProblemPosition::Polygon(RingRole::Interior(j), CoordinatePosition(-1)),
+                        ));
                     }
                 }
             }

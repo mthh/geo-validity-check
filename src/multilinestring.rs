@@ -1,6 +1,6 @@
 use crate::{GeometryPosition, ProblemAtPosition, ProblemPosition, Valid};
 use geo::GeoFloat;
-use geo_types::{MultiLineString};
+use geo_types::MultiLineString;
 use num_traits::FromPrimitive;
 
 /// MultiLineString is valid if all its LineStrings are valid.
@@ -50,7 +50,7 @@ mod tests {
         CoordinatePosition, GeometryPosition, Problem, ProblemAtPosition, ProblemPosition, Valid,
     };
     use geo_types::{Coord, LineString, MultiLineString};
-    use geos::Geom;
+    // use geos::Geom;
 
     #[test]
     fn test_multilinestring_valid() {

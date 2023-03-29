@@ -5,7 +5,7 @@ use crate::{
 use geo::coordinate_position::CoordPos;
 use geo::dimensions::Dimensions;
 use geo::{GeoFloat, Relate};
-use geo_types::{MultiPolygon};
+use geo_types::MultiPolygon;
 use num_traits::FromPrimitive;
 
 /// MultiPolygon is valid if:
@@ -27,17 +27,13 @@ where
                         return false;
                     }
                     let im = pol.relate(pol2);
-                    match im.get(CoordPos::Inside, CoordPos::Inside) {
-                        Dimensions::TwoDimensional => {
-                            return false;
-                        }
-                        _ => {}
+                    if im.get(CoordPos::Inside, CoordPos::Inside) == Dimensions::TwoDimensional {
+                        return false;
                     }
-                    match im.get(CoordPos::OnBoundary, CoordPos::OnBoundary) {
-                        Dimensions::OneDimensional => {
-                            return false;
-                        }
-                        _ => {}
+                    if im.get(CoordPos::OnBoundary, CoordPos::OnBoundary)
+                        == Dimensions::OneDimensional
+                    {
+                        return false;
                     }
                 }
             }
@@ -83,31 +79,28 @@ where
                         ));
                     } else {
                         let im = polygon.relate(pol2);
-                        match im.get(CoordPos::Inside, CoordPos::Inside) {
-                            Dimensions::TwoDimensional => {
-                                reason.push(ProblemAtPosition(
-                                    Problem::ElementsOverlaps,
-                                    ProblemPosition::MultiPolygon(
-                                        GeometryPosition(j),
-                                        RingRole::Exterior,
-                                        CoordinatePosition(-1),
-                                    ),
-                                ));
-                            }
-                            _ => {}
+                        if im.get(CoordPos::Inside, CoordPos::Inside) == Dimensions::TwoDimensional
+                        {
+                            reason.push(ProblemAtPosition(
+                                Problem::ElementsOverlaps,
+                                ProblemPosition::MultiPolygon(
+                                    GeometryPosition(j),
+                                    RingRole::Exterior,
+                                    CoordinatePosition(-1),
+                                ),
+                            ));
                         }
-                        match im.get(CoordPos::OnBoundary, CoordPos::OnBoundary) {
-                            Dimensions::OneDimensional => {
-                                reason.push(ProblemAtPosition(
-                                    Problem::ElementsTouchOnALine,
-                                    ProblemPosition::MultiPolygon(
-                                        GeometryPosition(j),
-                                        RingRole::Exterior,
-                                        CoordinatePosition(-1),
-                                    ),
-                                ));
-                            }
-                            _ => {}
+                        if im.get(CoordPos::OnBoundary, CoordPos::OnBoundary)
+                            == Dimensions::OneDimensional
+                        {
+                            reason.push(ProblemAtPosition(
+                                Problem::ElementsTouchOnALine,
+                                ProblemPosition::MultiPolygon(
+                                    GeometryPosition(j),
+                                    RingRole::Exterior,
+                                    CoordinatePosition(-1),
+                                ),
+                            ));
                         }
                     }
                 }

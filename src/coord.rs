@@ -1,7 +1,6 @@
 use crate::{utils, Problem, ProblemAtPosition, ProblemPosition, Valid};
-use geo::{GeoFloat};
+use geo::GeoFloat;
 use geo_types::Coord;
-
 
 impl<T> Valid for Coord<T>
 where

@@ -1,7 +1,6 @@
 use crate::{ProblemAtPosition, Valid};
-use geo::{GeoFloat};
+use geo::GeoFloat;
 use geo_types::Point;
-
 
 /// In PostGIS, Point don't have any validity constraint.
 /// Here we choose to check that points are finite numbers (i.e. not NaN or infinite)

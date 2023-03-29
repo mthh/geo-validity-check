@@ -1,7 +1,7 @@
 use geo::RemoveRepeatedPoints;
 use geo::{GeoNum, Intersects};
 use geo_types::{Coord, CoordFloat, LineString};
-use num_traits::{Float, FromPrimitive};
+use num_traits::FromPrimitive;
 use robust::{orient2d, Coord as RobustCoord};
 
 pub(crate) fn check_coord_is_not_finite<T: CoordFloat>(geom: &Coord<T>) -> bool {

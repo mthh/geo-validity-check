@@ -1,5 +1,5 @@
 use crate::{utils, CoordinatePosition, Problem, ProblemAtPosition, ProblemPosition, Valid};
-use geo::{GeoFloat};
+use geo::GeoFloat;
 use geo_types::LineString;
 use num_traits::FromPrimitive;
 
