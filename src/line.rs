@@ -1,7 +1,12 @@
 use crate::{utils, CoordinatePosition, Problem, ProblemAtPosition, ProblemPosition, Valid};
-use geo_types::Line;
+use geo::{CoordNum, GeoFloat};
+use geo_types::{CoordFloat, Line};
+use num_traits::{Float, FromPrimitive};
 
-impl Valid for Line {
+impl<T> Valid for Line<T>
+where
+    T: GeoFloat + FromPrimitive,
+{
     fn is_valid(&self) -> bool {
         if utils::check_coord_is_not_finite(&self.start)
             || utils::check_coord_is_not_finite(&self.end)

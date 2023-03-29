@@ -1,9 +1,14 @@
 use crate::{utils, CoordinatePosition, Problem, ProblemAtPosition, ProblemPosition, Valid};
+use geo::CoordNum;
 use geo_types::Triangle;
+use num_traits::Float;
 
 /// As stated in geo-types/src/geometry/triangles.rs,
 /// "the three vertices must not be collinear and they must be distinct"
-impl Valid for Triangle {
+impl<T> Valid for Triangle<T>
+where
+    T: CoordNum + Float,
+{
     fn is_valid(&self) -> bool {
         if utils::check_coord_is_not_finite(&self.0)
             || utils::check_coord_is_not_finite(&self.1)
@@ -16,7 +21,7 @@ impl Valid for Triangle {
             return false;
         }
 
-        if utils::check_points_are_collinear(&self.0, &self.1, &self.2) {
+        if utils::robust_check_points_are_collinear::<T>(&self.0, &self.1, &self.2) {
             return false;
         }
         true
@@ -62,7 +67,7 @@ impl Valid for Triangle {
             identical = true;
         }
 
-        if !identical && utils::check_points_are_collinear(&self.0, &self.1, &self.2) {
+        if !identical && utils::robust_check_points_are_collinear::<T>(&self.0, &self.1, &self.2) {
             reason.push(ProblemAtPosition(
                 Problem::CollinearCoords,
                 ProblemPosition::Triangle(CoordinatePosition(-1)),
@@ -114,4 +119,17 @@ mod tests {
             )])
         );
     }
+
+    // #[test]
+    // fn test_triangle_invalid_points_collinear2() {
+    //     let t = Triangle((0, 0).into(), (1, 1).into(), (2, 2).into());
+    //     assert!(!t.is_valid());
+    //     assert_eq!(
+    //         t.explain_invalidity(),
+    //         Some(vec![ProblemAtPosition(
+    //             Problem::CollinearCoords,
+    //             ProblemPosition::Triangle(CoordinatePosition(-1)),
+    //         )])
+    //     );
+    // }
 }

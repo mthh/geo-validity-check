@@ -3,8 +3,9 @@ use crate::{
 };
 use geo::coordinate_position::CoordPos;
 use geo::dimensions::Dimensions;
-use geo::{Contains, Relate};
-use geo_types::Polygon;
+use geo::{Contains, GeoFloat, Relate};
+use geo_types::{CoordFloat, Polygon};
+use num_traits::FromPrimitive;
 
 /// In PostGIS, polygons must follow the following rules to be valid:
 /// - [x] the polygon boundary rings (the exterior shell ring and interior hole rings) are simple (do not cross or self-touch). Because of this a polygon cannnot have cut lines, spikes or loops. This implies that polygon holes must be represented as interior rings, rather than by the exterior ring self-touching (a so-called "inverted hole").
@@ -12,7 +13,10 @@ use geo_types::Polygon;
 /// - [x] boundary rings may touch at points but only as a tangent (i.e. not in a line)
 /// - [x] interior rings are contained in the exterior ring
 /// - [ ] the polygon interior is simply connected (i.e. the rings must not touch in a way that splits the polygon into more than one part)
-impl Valid for Polygon {
+impl<T> Valid for Polygon<T>
+where
+    T: GeoFloat + FromPrimitive,
+{
     fn is_valid(&self) -> bool {
         for ring in self.interiors().iter().chain([self.exterior()]) {
             if utils::check_too_few_points(ring, true) {
@@ -190,6 +194,8 @@ impl Valid for Polygon {
 mod tests {
     use crate::{CoordinatePosition, Problem, ProblemAtPosition, ProblemPosition, RingRole, Valid};
     use geo_types::{Coord, LineString, Polygon};
+    use geos::Geom;
+    use sfcgal::ToSFCGAL;
 
     #[test]
     fn test_polygon_valid() {
@@ -205,6 +211,14 @@ mod tests {
         );
         assert!(p.is_valid());
         assert!(p.explain_invalidity().is_none());
+
+        // Test that the polygon has the same validity status than its SFCGAL equivalent
+        let polygon_sfcgal = p.to_sfcgal().unwrap();
+        assert_eq!(p.is_valid(), polygon_sfcgal.is_valid().unwrap());
+
+        // Test that the polygon has the same validity status than its GEOS equivalent
+        let polygon_geos: geos::Geometry = (&p).try_into().unwrap();
+        assert_eq!(p.is_valid(), polygon_geos.is_valid());
     }
 
     #[test]
@@ -225,6 +239,10 @@ mod tests {
 
         assert!(p.is_valid());
         assert!(p.explain_invalidity().is_none());
+
+        // Test that the polygon has the same validity status than its GEOS equivalent
+        let polygon_geos: geos::Geometry = (&p).try_into().unwrap();
+        assert_eq!(p.is_valid(), polygon_geos.is_valid());
     }
 
     #[test]
@@ -241,6 +259,10 @@ mod tests {
 
         assert!(p.is_valid());
         assert!(p.explain_invalidity().is_none());
+
+        // Test that the polygon has the same validity status than its GEOS equivalent
+        let polygon_geos: geos::Geometry = (&p).try_into().unwrap();
+        assert_eq!(p.is_valid(), polygon_geos.is_valid());
     }
 
     #[test]
@@ -276,6 +298,14 @@ mod tests {
                 )
             ])
         );
+
+        // Test that the polygon has the same validity status than its SFCGAL equivalent
+        let polygon_sfcgal = p.to_sfcgal().unwrap();
+        assert_eq!(p.is_valid(), polygon_sfcgal.is_valid().unwrap());
+
+        // Test that the polygon has the same validity status than its GEOS equivalent
+        let polygon_geos: geos::Geometry = (&p).try_into().unwrap();
+        assert_eq!(p.is_valid(), polygon_geos.is_valid());
     }
 
     #[test]
@@ -311,6 +341,14 @@ mod tests {
                 )
             ])
         );
+
+        // Test that the polygon has the same validity status than its SFCGAL equivalent
+        let polygon_sfcgal = p.to_sfcgal().unwrap();
+        assert_eq!(p.is_valid(), polygon_sfcgal.is_valid().unwrap());
+
+        // Test that the polygon has the same validity status than its GEOS equivalent
+        let polygon_geos: geos::Geometry = (&p).try_into().unwrap();
+        assert_eq!(p.is_valid(), polygon_geos.is_valid());
     }
 
     #[test]
@@ -338,6 +376,14 @@ mod tests {
                 ProblemPosition::Polygon(RingRole::Interior(0), CoordinatePosition(-1))
             )])
         );
+
+        // Test that the polygon has the same validity status than its SFCGAL equivalent
+        let polygon_sfcgal = p.to_sfcgal().unwrap();
+        assert_eq!(p.is_valid(), polygon_sfcgal.is_valid().unwrap());
+
+        // Test that the polygon has the same validity status than its GEOS equivalent
+        let polygon_geos: geos::Geometry = (&p).try_into().unwrap();
+        assert_eq!(p.is_valid(), polygon_geos.is_valid());
     }
 
     #[test]
@@ -357,6 +403,14 @@ mod tests {
                 ProblemPosition::Polygon(RingRole::Exterior, CoordinatePosition(1))
             )])
         );
+
+        // Test that the polygon has the same validity status than its SFCGAL equivalent
+        let polygon_sfcgal = p.to_sfcgal().unwrap();
+        assert_eq!(p.is_valid(), polygon_sfcgal.is_valid().unwrap());
+
+        // Test that the polygon has the same validity status than its GEOS equivalent
+        let polygon_geos: geos::Geometry = (&p).try_into().unwrap();
+        assert_eq!(p.is_valid(), polygon_geos.is_valid());
     }
 
     #[test]
@@ -384,6 +438,14 @@ mod tests {
                 ProblemPosition::Polygon(RingRole::Exterior, CoordinatePosition(-1))
             )])
         );
+
+        // Test that the polygon has the same validity status than its SFCGAL equivalent
+        let polygon_sfcgal = p.to_sfcgal().unwrap();
+        assert_eq!(p.is_valid(), polygon_sfcgal.is_valid().unwrap());
+
+        // Test that the polygon has the same validity status than its GEOS equivalent
+        let polygon_geos: geos::Geometry = (&p).try_into().unwrap();
+        assert_eq!(p.is_valid(), polygon_geos.is_valid());
     }
 
     #[test]
@@ -407,6 +469,14 @@ mod tests {
                 ProblemPosition::Polygon(RingRole::Exterior, CoordinatePosition(-1))
             )])
         );
+
+        // Test that the polygon has the same validity status than its SFCGAL equivalent
+        let polygon_sfcgal = p.to_sfcgal().unwrap();
+        assert_eq!(p.is_valid(), polygon_sfcgal.is_valid().unwrap());
+
+        // Test that the polygon has the same validity status than its GEOS equivalent
+        let polygon_geos: geos::Geometry = (&p).try_into().unwrap();
+        assert_eq!(p.is_valid(), polygon_geos.is_valid());
     }
 
     #[test]
@@ -435,6 +505,14 @@ mod tests {
                 ProblemPosition::Polygon(RingRole::Interior(0), CoordinatePosition(-1))
             )])
         );
+
+        // Test that the polygon has the same validity status than its SFCGAL equivalent
+        let polygon_sfcgal = p.to_sfcgal().unwrap();
+        assert_eq!(p.is_valid(), polygon_sfcgal.is_valid().unwrap());
+
+        // Test that the polygon has the same validity status than its GEOS equivalent
+        let polygon_geos: geos::Geometry = (&p).try_into().unwrap();
+        assert_eq!(p.is_valid(), polygon_geos.is_valid());
     }
 
     #[test]
@@ -463,46 +541,46 @@ mod tests {
             (2.0, 2.0),
         ]);
 
-        let p1 = Polygon::new(
-            exterior.clone(),
-            vec![
-                interior1.clone(),
-                interior2.clone(),
-            ],
-        );
+        let p1 = Polygon::new(exterior.clone(), vec![interior1.clone(), interior2.clone()]);
 
         assert!(!p1.is_valid());
         assert_eq!(
             p1.explain_invalidity(),
-            Some(vec![ProblemAtPosition(
-                Problem::IntersectingRingsOnAnArea,
-                ProblemPosition::Polygon(RingRole::Interior(0), CoordinatePosition(-1))
-            ),ProblemAtPosition(
-                Problem::IntersectingRingsOnAnArea,
-                ProblemPosition::Polygon(RingRole::Interior(1), CoordinatePosition(-1))
-            )])
+            Some(vec![
+                ProblemAtPosition(
+                    Problem::IntersectingRingsOnAnArea,
+                    ProblemPosition::Polygon(RingRole::Interior(0), CoordinatePosition(-1))
+                ),
+                ProblemAtPosition(
+                    Problem::IntersectingRingsOnAnArea,
+                    ProblemPosition::Polygon(RingRole::Interior(1), CoordinatePosition(-1))
+                )
+            ])
         );
 
         // Let see if we switch the order of the interior rings
         // (this is still invalid)
-        let p2 = Polygon::new(
-            exterior,
-            vec![
-                interior2,
-                interior1,
-            ],
-        );
+        let p2 = Polygon::new(exterior, vec![interior2, interior1]);
 
         assert!(!p2.is_valid());
         assert_eq!(
             p2.explain_invalidity(),
-            Some(vec![ProblemAtPosition(
-                Problem::IntersectingRingsOnAnArea,
-                ProblemPosition::Polygon(RingRole::Interior(0), CoordinatePosition(-1))
-            ),ProblemAtPosition(
-                Problem::IntersectingRingsOnAnArea,
-                ProblemPosition::Polygon(RingRole::Interior(1), CoordinatePosition(-1))
-            )])
+            Some(vec![
+                ProblemAtPosition(
+                    Problem::IntersectingRingsOnAnArea,
+                    ProblemPosition::Polygon(RingRole::Interior(0), CoordinatePosition(-1))
+                ),
+                ProblemAtPosition(
+                    Problem::IntersectingRingsOnAnArea,
+                    ProblemPosition::Polygon(RingRole::Interior(1), CoordinatePosition(-1))
+                )
+            ])
         );
+
+        // Test that the polygons have the same validity status than their GEOS equivalents
+        let polygon_geos1: geos::Geometry = (&p1).try_into().unwrap();
+        let polygon_geos2: geos::Geometry = (&p2).try_into().unwrap();
+        assert_eq!(p1.is_valid(), polygon_geos1.is_valid());
+        assert_eq!(p2.is_valid(), polygon_geos2.is_valid());
     }
 }

@@ -4,14 +4,18 @@ use crate::{
 };
 use geo::coordinate_position::CoordPos;
 use geo::dimensions::Dimensions;
-use geo::Relate;
-use geo_types::MultiPolygon;
+use geo::{GeoFloat, Relate};
+use geo_types::{CoordFloat, MultiPolygon};
+use num_traits::FromPrimitive;
 
 /// MultiPolygon is valid if:
 /// - [x] all its polygons are valid,
 /// - [x] elements do not overlaps (i.e. their interiors must not intersect)
 /// - [x] elements touch only at points
-impl Valid for MultiPolygon {
+impl<T> Valid for MultiPolygon<T>
+where
+    T: GeoFloat + FromPrimitive,
+{
     fn is_valid(&self) -> bool {
         for (j, pol) in self.0.iter().enumerate() {
             if !pol.is_valid() {
@@ -125,6 +129,7 @@ mod tests {
         RingRole, Valid,
     };
     use geo_types::{LineString, MultiPolygon, Polygon};
+    use geos::Geom;
 
     #[test]
     fn test_multipolygon_invalid() {
@@ -203,5 +208,9 @@ mod tests {
                 )
             ])
         );
+
+        // Test that the polygon has the same validity status than its GEOS equivalent
+        let multipolygon_geos: geos::Geometry = (&mp).try_into().unwrap();
+        assert_eq!(mp.is_valid(), multipolygon_geos.is_valid());
     }
 }

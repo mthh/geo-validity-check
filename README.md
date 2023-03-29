@@ -31,6 +31,9 @@ The result of the invalidity reason can be formatted as a string as it implement
 - [x] `MultiPolygon` is made of valid polygons
 - [ ] `GeometryCollection` is made of valid geometries
 
+Verification is done against GEOS
+(any geometry invalid according to GEOS should be invalid according to this crate - the inverse doesn't have to be true since we are doing some extra check).
+
 ## Example
 
 ```rust

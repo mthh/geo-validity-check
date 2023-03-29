@@ -1,10 +1,16 @@
 use crate::{utils, CoordinatePosition, Problem, ProblemAtPosition, ProblemPosition, Valid};
+use geo::{CoordFloat, GeoFloat};
 use geo_types::LineString;
+use num_traits::FromPrimitive;
 
 /// In postGIS, a LineString is valid if it has at least 2 points
 /// and have a non-zero length (i.e. the first and last points are not the same).
 /// Here we also check that all its points are finite numbers.
-impl Valid for LineString {
+
+impl<T> Valid for LineString<T>
+where
+    T: GeoFloat + FromPrimitive,
+{
     fn is_valid(&self) -> bool {
         if utils::check_too_few_points(self, false) {
             return false;
@@ -50,12 +56,17 @@ impl Valid for LineString {
 mod tests {
     use crate::{CoordinatePosition, Problem, ProblemAtPosition, ProblemPosition, Valid};
     use geo_types::{Coord, LineString};
+    use geos::Geom;
 
     #[test]
     fn test_linestring_valid() {
         let ls = LineString(vec![Coord { x: 0., y: 0. }, Coord { x: 1., y: 1. }]);
         assert!(ls.is_valid());
         assert!(ls.explain_invalidity().is_none());
+
+        // Test that the linestring has the same validity status than its GEOS equivalent
+        let linestring_geos: geos::Geometry = (&ls).try_into().unwrap();
+        assert_eq!(ls.is_valid(), linestring_geos.is_valid());
     }
 
     #[test]
@@ -69,6 +80,10 @@ mod tests {
                 ProblemPosition::LineString(CoordinatePosition(0))
             )])
         );
+
+        // This linestring is invalid according to this crate but valid according to GEOS
+        let linestring_geos: geos::Geometry = (&ls).try_into().unwrap();
+        assert_eq!(ls.is_valid(), !linestring_geos.is_valid());
     }
 
     #[test]
@@ -82,6 +97,10 @@ mod tests {
                 ProblemPosition::LineString(CoordinatePosition(0))
             )])
         );
+
+        // Creating this linestring with geos fails (as soon as its creation is attempted)
+        let linestring_geos: geos::GResult<geos::Geometry> = (&ls).try_into();
+        assert!(linestring_geos.is_err());
     }
 
     #[test]
@@ -95,5 +114,9 @@ mod tests {
                 ProblemPosition::LineString(CoordinatePosition(0))
             )])
         );
+
+        // Test that the linestring has the same validity status than its GEOS equivalent
+        let linestring_geos: geos::Geometry = (&ls).try_into().unwrap();
+        assert_eq!(ls.is_valid(), linestring_geos.is_valid());
     }
 }

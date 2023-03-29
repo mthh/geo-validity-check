@@ -1,8 +1,13 @@
 use crate::{GeometryPosition, ProblemAtPosition, ProblemPosition, Valid};
-use geo_types::MultiLineString;
+use geo::GeoFloat;
+use geo_types::{CoordFloat, MultiLineString};
+use num_traits::FromPrimitive;
 
 /// MultiLineString is valid if all its LineStrings are valid.
-impl Valid for MultiLineString {
+impl<T> Valid for MultiLineString<T>
+where
+    T: GeoFloat + FromPrimitive,
+{
     fn is_valid(&self) -> bool {
         for line in &self.0 {
             if !line.is_valid() {
@@ -45,6 +50,7 @@ mod tests {
         CoordinatePosition, GeometryPosition, Problem, ProblemAtPosition, ProblemPosition, Valid,
     };
     use geo_types::{Coord, LineString, MultiLineString};
+    use geos::Geom;
 
     #[test]
     fn test_multilinestring_valid() {
@@ -54,6 +60,10 @@ mod tests {
         ]);
         assert!(mls.is_valid());
         assert!(mls.explain_invalidity().is_none());
+
+        // // Test that the linestring has the same validity status than its GEOS equivalent
+        // let multilinestring_geos: geos::Geometry = (&mls).try_into().unwrap();
+        // assert_eq!(mls.is_valid(), multilinestring_geos.is_valid());
     }
 
     #[test]
@@ -72,5 +82,9 @@ mod tests {
                 ProblemPosition::MultiLineString(GeometryPosition(1), CoordinatePosition(0))
             )])
         );
+
+        // // Test that the linestring has the same validity status than its GEOS equivalent
+        // let multilinestring_geos: geos::Geometry = (&mls).try_into().unwrap();
+        // assert_eq!(mls.is_valid(), multilinestring_geos.is_valid());
     }
 }

@@ -1,9 +1,14 @@
 use crate::{utils, GeometryPosition, Problem, ProblemAtPosition, ProblemPosition, Valid};
-use geo_types::MultiPoint;
+use geo::{CoordNum, GeoFloat};
+use geo_types::{CoordFloat, MultiPoint};
+use num_traits::{Float, FromPrimitive};
 
 /// In PostGIS, MultiPoint don't have any validity constraint.
 /// Here we choose to check that points are finite numbers (i.e. not NaN or infinite)
-impl Valid for MultiPoint {
+impl<T> Valid for MultiPoint<T>
+where
+    T: GeoFloat,
+{
     fn is_valid(&self) -> bool {
         for point in &self.0 {
             if !point.is_valid() {
