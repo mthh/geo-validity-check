@@ -1,12 +1,22 @@
 [package]
 name = "geo-validity-check"
 version = "0.1.0"
+authors = ["Matthieu Viry <matthieu.viry@cnrs.fr>"]
 edition = "2021"
+
+license = "MIT OR Apache-2.0"
+description = "Expose a Valid trait to check the validity of a geometry and report cause(s) of invalidity."
+repository = "https://github.com/mthh/geo-validity-check"
+homepage = "https://github.com/mthh/geo-validity-check"
+documentation = "https://docs.rs/geo-validity-check"
+readme = "README.md"
+keywords = ["geo", "validity", "geo-types"]
+
 
 [dependencies]
 geo-types = "^0.7"
 geo = "^0.24"
-robust = "0.2.3"
+robust = "1.0.0"
 num-traits = { version = "0.2", default-features = false, features = ["libm"] }
 float_next_after = "1.0.0"
 

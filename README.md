@@ -11,7 +11,10 @@ trait Valid {
 }
 ```
 
-The result of the invalidity reason can be formatted as a string as it implements the `Display` trait.
+The result of the invalidity reason is provided as a `Vec` of `(Problem, ProblemPosition)`
+(two enums that respectively represent the type of problem and the position of the problem in the tested geometry - having
+this machine-readable information could be useful to try to fix the geometry).
+This result can also be formatted as a string as it implements the `Display` trait.
 
 ## Checks implemented
 
@@ -29,17 +32,12 @@ The result of the invalidity reason can be formatted as a string as it implement
 - [x] `Polygon` interior rings don't cross each other (but can touch on a point)
 - [x] `MultiPolygon` components don't cross each other (but can touch on a point)
 - [x] `MultiPolygon` is made of valid polygons
-- [ ] `GeometryCollection` is made of valid geometries
+- [x] `GeometryCollection` is made of valid geometries
 
 Verification is done against GEOS
 (any geometry invalid according to GEOS should be invalid according to this crate - the inverse doesn't have to be true since we are doing some extra check).
 
 ## Example
-
-```rust
-
-These tests are mostly based on the [OGC Simple Features for SQL specification](https://www.ogc.org/standards/sfa)
-but also include some additional checks.
 
 ```rust
 use geo_validity_check::Valid;
@@ -80,3 +78,14 @@ println!("{}", multipolygon.invalidity_reason().unwrap());
 // "Inner ring 0 intersects the exterior ring (Polygon 0).
 // Inner ring 0 intersects the exterior ring (Polygon 1)."
 ```
+
+## TODO / Ideas
+
+## License
+
+Licensed under either of
+
+- Apache License, Version 2.0, (LICENSE-APACHE or http://www.apache.org/licenses/LICENSE-2.0)
+- MIT license (LICENSE-MIT or http://opensource.org/licenses/MIT)
+
+at your option.
