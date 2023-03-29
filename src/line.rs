@@ -1,7 +1,7 @@
 use crate::{utils, CoordinatePosition, Problem, ProblemAtPosition, ProblemPosition, Valid};
-use geo::{CoordNum, GeoFloat};
-use geo_types::{CoordFloat, Line};
-use num_traits::{Float, FromPrimitive};
+use geo::{GeoFloat};
+use geo_types::{Line};
+use num_traits::{FromPrimitive};
 
 impl<T> Valid for Line<T>
 where

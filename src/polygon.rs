@@ -4,7 +4,7 @@ use crate::{
 use geo::coordinate_position::CoordPos;
 use geo::dimensions::Dimensions;
 use geo::{Contains, GeoFloat, Relate};
-use geo_types::{CoordFloat, Polygon};
+use geo_types::{Polygon};
 use num_traits::FromPrimitive;
 
 /// In PostGIS, polygons must follow the following rules to be valid:

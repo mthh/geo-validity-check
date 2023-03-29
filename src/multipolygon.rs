@@ -5,7 +5,7 @@ use crate::{
 use geo::coordinate_position::CoordPos;
 use geo::dimensions::Dimensions;
 use geo::{GeoFloat, Relate};
-use geo_types::{CoordFloat, MultiPolygon};
+use geo_types::{MultiPolygon};
 use num_traits::FromPrimitive;
 
 /// MultiPolygon is valid if:

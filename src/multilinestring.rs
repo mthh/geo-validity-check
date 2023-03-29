@@ -1,6 +1,6 @@
 use crate::{GeometryPosition, ProblemAtPosition, ProblemPosition, Valid};
 use geo::GeoFloat;
-use geo_types::{CoordFloat, MultiLineString};
+use geo_types::{MultiLineString};
 use num_traits::FromPrimitive;
 
 /// MultiLineString is valid if all its LineStrings are valid.

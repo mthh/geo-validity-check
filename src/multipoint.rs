@@ -1,7 +1,7 @@
 use crate::{utils, GeometryPosition, Problem, ProblemAtPosition, ProblemPosition, Valid};
-use geo::{CoordNum, GeoFloat};
-use geo_types::{CoordFloat, MultiPoint};
-use num_traits::{Float, FromPrimitive};
+use geo::{GeoFloat};
+use geo_types::{MultiPoint};
+
 
 /// In PostGIS, MultiPoint don't have any validity constraint.
 /// Here we choose to check that points are finite numbers (i.e. not NaN or infinite)
