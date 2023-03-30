@@ -27,6 +27,7 @@ This result can also be formatted as a string as it implements the `Display` tra
 - [x] `LineString` is not empty
 - [x] `LineString` has at least two different points
 - [x] `MultiLineString` is made of valid linestrings
+- [x] `Polygon` rings are made of valid points
 - [x] `Polygon` rings have at least 4 points (including the closing point)
 - [x] `Polygon` interior rings are contained in the exterior ring (but can touch it on a point)
 - [x] `Polygon` interior rings don't cross each other (but can touch on a point)
@@ -80,6 +81,12 @@ println!("{}", multipolygon.invalidity_reason().unwrap());
 ```
 
 ## TODO / Ideas
+
+- [ ] Publish on crates.io once the API is stabilized / once we dont need to pull geos from github.
+
+- [ ] Improve the description of the invalidity reason (e.g. *"Interior ring 0 intersects the exterior ring"* could be *"Interior ring 0 intersects the exterior ring at point (1.5, 1.5)"*)
+
+- [ ] Add a `make_valid` or `fix_invalidity` method to try to fix the geometry (e.g. by removing the invalid points ?)
 
 ## License
 
