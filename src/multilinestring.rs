@@ -50,7 +50,7 @@ mod tests {
         CoordinatePosition, GeometryPosition, Problem, ProblemAtPosition, ProblemPosition, Valid,
     };
     use geo_types::{Coord, LineString, MultiLineString};
-    // use geos::Geom;
+    use geos::Geom;
 
     #[test]
     fn test_multilinestring_valid() {
@@ -61,9 +61,9 @@ mod tests {
         assert!(mls.is_valid());
         assert!(mls.explain_invalidity().is_none());
 
-        // // Test that the linestring has the same validity status than its GEOS equivalent
-        // let multilinestring_geos: geos::Geometry = (&mls).try_into().unwrap();
-        // assert_eq!(mls.is_valid(), multilinestring_geos.is_valid());
+        // Test that the linestring has the same validity status than its GEOS equivalent
+        let multilinestring_geos: geos::Geometry = (&mls).try_into().unwrap();
+        assert_eq!(mls.is_valid(), multilinestring_geos.is_valid());
     }
 
     #[test]
@@ -83,8 +83,8 @@ mod tests {
             )])
         );
 
-        // // Test that the linestring has the same validity status than its GEOS equivalent
-        // let multilinestring_geos: geos::Geometry = (&mls).try_into().unwrap();
-        // assert_eq!(mls.is_valid(), multilinestring_geos.is_valid());
+        // Test that the linestring has the same validity status than its GEOS equivalent
+        let multilinestring_geos: geos::Geometry = (&mls).try_into().unwrap();
+        assert_eq!(mls.is_valid(), multilinestring_geos.is_valid());
     }
 }

@@ -41,12 +41,17 @@ where
 mod tests {
     use crate::{GeometryPosition, Problem, ProblemAtPosition, ProblemPosition, Valid};
     use geo_types::{MultiPoint, Point};
+    use geos::Geom;
 
     #[test]
     fn test_multipoint_valid() {
         let mp = MultiPoint(vec![Point::new(0., 0.), Point::new(1., 1.)]);
         assert!(mp.is_valid());
         assert!(mp.explain_invalidity().is_none());
+
+        // This multipoint is invalid according to this crate but valid according to GEOS
+        let multipoint_geos: geos::Geometry = (&mp).try_into().unwrap();
+        assert_eq!(mp.is_valid(), multipoint_geos.is_valid());
     }
 
     #[test]
@@ -69,5 +74,9 @@ mod tests {
                 )
             ])
         );
+
+        // Test that this multipoint has the same validity status than its GEOS equivalent
+        let multipoint_geos: geos::Geometry = (&mp).try_into().unwrap();
+        assert_eq!(mp.is_valid(), multipoint_geos.is_valid());
     }
 }

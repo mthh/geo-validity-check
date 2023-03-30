@@ -41,10 +41,12 @@ impl Valid for GeometryCollection {
 
 #[cfg(test)]
 mod tests {
+    use std::any::Any;
     use crate::{
         CoordinatePosition, GeometryPosition, Problem, ProblemAtPosition, ProblemPosition, Valid,
     };
     use geo_types::{Coord, Geometry, GeometryCollection, LineString, Point};
+    use geos::Geom;
 
     #[test]
     fn test_geometrycollection_contain_invalid_element() {
@@ -70,5 +72,21 @@ mod tests {
                 )
             )])
         );
+
+        let geoms = gc.0.iter().map(|geometry| {
+            match geometry {
+                Geometry::Point(pt) => {
+                    let geos_point: geos::Geometry = pt.try_into().unwrap();
+                    geos_point
+                },
+                Geometry::LineString(ls) => {
+                    let geos_linestring: geos::Geometry = ls.try_into().unwrap();
+                    geos_linestring
+                },
+                _ => unreachable!(),
+            }
+        }).collect::<Vec<_>>();
+        let geometrycollection_geos: geos::Geometry = geos::Geometry::create_geometry_collection(geoms).unwrap();
+        assert_eq!(gc.is_valid(), geometrycollection_geos.is_valid());
     }
 }
