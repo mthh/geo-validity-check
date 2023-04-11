@@ -7,14 +7,14 @@ Expose a `Valid` trait to check if rust [geo-types](https://crates.io/crates/geo
 ```rust
 trait Valid {
     fn is_valid(&self) -> bool;
-    fn explain_invalidity(&self) -> Option<Vec<ProblemAtPosition>>;
+    fn explain_invalidity(&self) -> Option<ProblemReport>;
 }
 ```
 
-The result of the invalidity reason is provided as a `Vec` of `(Problem, ProblemPosition)`
-(two enums that respectively represent the type of problem and the position of the problem in the tested geometry - having
+The result of the invalidity reason is provided in a `ProblemReport` struct (it contains a `Vec` of `(Problem, ProblemPosition)`,
+two enums that respectively represent the type of problem and the position of the problem in the tested geometry - having
 this machine-readable information could be useful to try to fix the geometry).
-This result can also be formatted as a string as it implements the `Display` trait.
+This `ProblemReport` result can also be formatted as a string as it implements the `Display` trait.
 
 ## Checks implemented
 
@@ -85,11 +85,11 @@ println!("{}", multipolygon.invalidity_reason().unwrap());
 
 ## TODO / Ideas
 
-- [ ] Publish on crates.io once the API is stabilized.
-
 - [ ] Improve the description of the invalidity reason (e.g. *"Interior ring 0 intersects the exterior ring"* could be *"Interior ring 0 intersects the exterior ring at point (1.5, 1.5)"*)
 
 - [ ] Add a `make_valid` or `fix_invalidity` method to try to fix the geometry (e.g. by removing the invalid points ?)
+
+- [ ] Return the first invalidity reason found (instead of all of them) in `invalidity_reason` method ? (because some other checks could fail because of the first invalidity reason)
 
 ## License
 
