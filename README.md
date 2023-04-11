@@ -91,6 +91,8 @@ println!("{}", multipolygon.invalidity_reason().unwrap());
 
 - [ ] Return the first invalidity reason found (instead of all of them) in `invalidity_reason` method ? (because some other checks could fail because of the first invalidity reason)
 
+- [ ] Implement a rule that states that a `Polygon` is valid if the polygon interior is simply connected (i.e. the rings must not touch in a way that splits the polygon into more than one part) ?
+
 ## License
 
 Licensed under either of
