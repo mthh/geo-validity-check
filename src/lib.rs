@@ -1,3 +1,12 @@
+//! # geo-validity-check
+//!
+//! This crate provides a way to check the validity of [geo-types](https://docs.rs/geo-types) geometries by implementing the Valid trait for all
+//! the geometries in geo-types.
+//!
+//! The Valid trait provides two methods:
+//! - `is_valid()` which returns a boolean,
+//! - `explain_invalidity()` which returns a ProblemReport (a vector of problems, each one with its position in the geometry) that implements the Display trait.
+//!
 mod coord;
 mod geometry;
 mod geometrycollection;
