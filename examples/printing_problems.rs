@@ -1,6 +1,5 @@
 use geo_types::{
-    Coord, GeometryCollection, Line, LineString, MultiLineString, MultiPolygon, Point, Polygon,
-    Rect, Triangle,
+    Coord, GeometryCollection, LineString, MultiLineString, MultiPolygon, Point, Polygon, Triangle,
 };
 use geo_validity_check::{ProblemReport, Valid};
 

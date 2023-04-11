@@ -98,17 +98,17 @@ impl Display for ProblemPosition {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut str_buffer: Vec<String> = Vec::new();
         match self {
-            ProblemPosition::Point => str_buffer.push(format!("")),
+            ProblemPosition::Point => str_buffer.push(String::new()),
             ProblemPosition::LineString(coord) => {
                 if coord.0 == -1 {
-                    str_buffer.push(format!(""))
+                    str_buffer.push(String::new())
                 } else {
                     str_buffer.push(format!(" at coordinate {} of the LineString", coord.0))
                 }
             }
             ProblemPosition::Triangle(coord) => {
                 if coord.0 == -1 {
-                    str_buffer.push(format!(""))
+                    str_buffer.push(String::new())
                 } else {
                     str_buffer.push(format!(" at coordinate {} of the Triangle", coord.0))
                 }
@@ -158,14 +158,14 @@ impl Display for ProblemPosition {
             }
             ProblemPosition::Rect(coord) => {
                 if coord.0 == -1 {
-                    str_buffer.push(format!(""))
+                    str_buffer.push(String::new())
                 } else {
                     str_buffer.push(format!(" at coordinate {} of the Rect", coord.0))
                 }
             }
             ProblemPosition::Line(coord) => {
                 if coord.0 == -1 {
-                    str_buffer.push(format!(""))
+                    str_buffer.push(String::new())
                 } else {
                     str_buffer.push(format!(" at coordinate {} of the Line", coord.0))
                 }
@@ -177,59 +177,55 @@ impl Display for ProblemPosition {
 
 impl Display for ProblemReport {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let buffer = self
-            .0
-            .iter()
-            .map(|p| {
-                let (problem, position) = (&p.0, &p.1);
-                let mut str_buffer: Vec<String> = Vec::new();
-                let mut is_polygon = match position {
-                    ProblemPosition::Polygon(_, _) => true,
-                    ProblemPosition::MultiPolygon(_, _, _) => true,
-                    _ => false,
-                };
+        let buffer =
+            self.0
+                .iter()
+                .map(|p| {
+                    let (problem, position) = (&p.0, &p.1);
+                    let mut str_buffer: Vec<String> = Vec::new();
+                    let is_polygon = matches!(
+                        position,
+                        ProblemPosition::Polygon(_, _) | ProblemPosition::MultiPolygon(_, _, _)
+                    );
 
-                str_buffer.push(format!("{}", position));
+                    str_buffer.push(format!("{}", position));
 
-                match *problem {
-                    Problem::NotFinite => {
-                        str_buffer.push(format!("Coordinate is not finite (NaN or infinite)"))
-                    }
-                    Problem::TooFewPoints => {
-                        if is_polygon {
-                            str_buffer.push(format!("Polygon ring has too few points"))
-                        } else {
-                            str_buffer.push(format!("LineString has too few points"))
+                    match *problem {
+                        Problem::NotFinite => str_buffer
+                            .push("Coordinate is not finite (NaN or infinite)".to_string()),
+                        Problem::TooFewPoints => {
+                            if is_polygon {
+                                str_buffer.push("Polygon ring has too few points".to_string())
+                            } else {
+                                str_buffer.push("LineString has too few points".to_string())
+                            }
                         }
-                    }
-                    Problem::IdenticalCoords => str_buffer.push(format!("Identical coords")),
-                    Problem::CollinearCoords => str_buffer.push(format!("Collinear coords")),
-                    Problem::SelfIntersection => {
-                        str_buffer.push(format!("Ring has a self-intersection"))
-                    }
-                    Problem::IntersectingRingsOnALine => str_buffer.push(format!(
-                        "Two interior rings of a Polygon share a common line"
-                    )),
-                    Problem::IntersectingRingsOnAnArea => str_buffer.push(format!(
-                        "Two interior rings of a Polygon share a common area"
-                    )),
-                    Problem::InteriorRingNotContainedInExteriorRing => str_buffer.push(format!(
-                        "The interior ring of a Polygon is not contained in the exterior ring"
-                    )),
-                    Problem::ElementsOverlaps => {
-                        str_buffer.push(format!("Two Polygons of MultiPolygons overlap partially"))
-                    }
-                    Problem::ElementsTouchOnALine => {
-                        str_buffer.push(format!("Two Polygons of MultiPolygons touch on a line"))
-                    }
-                    Problem::ElementsAreIdentical => {
-                        str_buffer.push(format!("Two Polygons of MultiPolygons are identical"))
-                    }
-                };
-                str_buffer.into_iter().rev().collect::<Vec<_>>().join("")
-            })
-            .collect::<Vec<String>>()
-            .join("\n");
+                        Problem::IdenticalCoords => str_buffer.push("Identical coords".to_string()),
+                        Problem::CollinearCoords => str_buffer.push("Collinear coords".to_string()),
+                        Problem::SelfIntersection => {
+                            str_buffer.push("Ring has a self-intersection".to_string())
+                        }
+                        Problem::IntersectingRingsOnALine => str_buffer.push(
+                            "Two interior rings of a Polygon share a common line".to_string(),
+                        ),
+                        Problem::IntersectingRingsOnAnArea => str_buffer.push(
+                            "Two interior rings of a Polygon share a common area".to_string(),
+                        ),
+                        Problem::InteriorRingNotContainedInExteriorRing => str_buffer.push(
+                            "The interior ring of a Polygon is not contained in the exterior ring"
+                                .to_string(),
+                        ),
+                        Problem::ElementsOverlaps => str_buffer
+                            .push("Two Polygons of MultiPolygons overlap partially".to_string()),
+                        Problem::ElementsTouchOnALine => str_buffer
+                            .push("Two Polygons of MultiPolygons touch on a line".to_string()),
+                        Problem::ElementsAreIdentical => str_buffer
+                            .push("Two Polygons of MultiPolygons are identical".to_string()),
+                    };
+                    str_buffer.into_iter().rev().collect::<Vec<_>>().join("")
+                })
+                .collect::<Vec<String>>()
+                .join("\n");
 
         write!(f, "{}", buffer)
     }
