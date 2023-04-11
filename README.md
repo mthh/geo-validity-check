@@ -52,8 +52,8 @@ assert!(line1.is_valid());
 assert!(!line2.is_valid());
 assert!(!line3.is_valid());
 
-println!("{}", line2.invalidity_reason().unwrap()); // "LineString is empty."
-println!("{}", line3.invalidity_reason().unwrap()); // "Coordinates (of point 1) have to be finite numbers."
+println!("{}", line2.invalidity_reason().unwrap()); // "LineString has too few points at coordinate 0 of the LineString"
+println!("{}", line3.invalidity_reason().unwrap()); // "Coordinate is not finite (NaN or infinite) at coordinate 1 of the LineString"
 
 let polygon = Polygon::new(
     LineString::from(vec![(0.5, 0.5), (3., 0.5), (3., 2.5), (0.5, 2.5), (0.5, 0.5)]),
@@ -61,7 +61,7 @@ let polygon = Polygon::new(
 );
 
 assert!(!polygon.is_valid());
-println!("{}", polygon.invalidity_reason().unwrap()); // "Interior ring 0 intersects the exterior ring."
+println!("{}", polygon.invalidity_reason().unwrap()); // "The interior ring of a Polygon is not contained in the exterior ring on the interior ring n°0"
 
 let multipolygon = MultiPolygon(vec![
     Polygon::new(
@@ -76,8 +76,11 @@ let multipolygon = MultiPolygon(vec![
 
 assert!(!multipolygon.is_valid());
 println!("{}", multipolygon.invalidity_reason().unwrap());
-// "Inner ring 0 intersects the exterior ring (Polygon 0).
-// Inner ring 0 intersects the exterior ring (Polygon 1)."
+// "The interior ring of a Polygon is not contained in the exterior ring on the interior ring n°0 of the Polygon n°0 of the MultiPolygon
+// Two Polygons of MultiPolygons are identical on the exterior ring of the Polygon n°0 of the MultiPolygon
+// The interior ring of a Polygon is not contained in the exterior ring on the interior ring n°0 of the Polygon n°1 of the MultiPolygon
+// Two Polygons of MultiPolygons are identical on the exterior ring of the Polygon n°1 of the MultiPolygon"
+
 ```
 
 ## TODO / Ideas
