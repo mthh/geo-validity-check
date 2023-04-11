@@ -5,7 +5,7 @@ authors = ["Matthieu Viry <matthieu.viry@cnrs.fr>"]
 edition = "2021"
 
 license = "MIT OR Apache-2.0"
-description = "Expose a 'Valid' trait to check the validity of a geometry and report cause(s) of invalidity."
+description = "Expose a 'Valid' trait to check the validity of a geo-types geometry and report cause(s) of invalidity."
 repository = "https://github.com/mthh/geo-validity-check"
 homepage = "https://github.com/mthh/geo-validity-check"
 documentation = "https://docs.rs/geo-validity-check"
