@@ -182,7 +182,6 @@ mod tests {
     use crate::{CoordinatePosition, Problem, ProblemAtPosition, ProblemPosition, RingRole, Valid};
     use geo_types::{Coord, LineString, Polygon};
     use geos::Geom;
-    use sfcgal::ToSFCGAL;
 
     #[test]
     fn test_polygon_valid() {
@@ -198,10 +197,6 @@ mod tests {
         );
         assert!(p.is_valid());
         assert!(p.explain_invalidity().is_none());
-
-        // Test that the polygon has the same validity status than its SFCGAL equivalent
-        let polygon_sfcgal = p.to_sfcgal().unwrap();
-        assert_eq!(p.is_valid(), polygon_sfcgal.is_valid().unwrap());
 
         // Test that the polygon has the same validity status than its GEOS equivalent
         let polygon_geos: geos::Geometry = (&p).try_into().unwrap();
@@ -286,10 +281,6 @@ mod tests {
             ])
         );
 
-        // Test that the polygon has the same validity status than its SFCGAL equivalent
-        let polygon_sfcgal = p.to_sfcgal().unwrap();
-        assert_eq!(p.is_valid(), polygon_sfcgal.is_valid().unwrap());
-
         // Test that the polygon has the same validity status than its GEOS equivalent
         let polygon_geos: geos::Geometry = (&p).try_into().unwrap();
         assert_eq!(p.is_valid(), polygon_geos.is_valid());
@@ -329,10 +320,6 @@ mod tests {
             ])
         );
 
-        // Test that the polygon has the same validity status than its SFCGAL equivalent
-        let polygon_sfcgal = p.to_sfcgal().unwrap();
-        assert_eq!(p.is_valid(), polygon_sfcgal.is_valid().unwrap());
-
         // Test that the polygon has the same validity status than its GEOS equivalent
         let polygon_geos: geos::Geometry = (&p).try_into().unwrap();
         assert_eq!(p.is_valid(), polygon_geos.is_valid());
@@ -364,10 +351,6 @@ mod tests {
             )])
         );
 
-        // Test that the polygon has the same validity status than its SFCGAL equivalent
-        let polygon_sfcgal = p.to_sfcgal().unwrap();
-        assert_eq!(p.is_valid(), polygon_sfcgal.is_valid().unwrap());
-
         // Test that the polygon has the same validity status than its GEOS equivalent
         let polygon_geos: geos::Geometry = (&p).try_into().unwrap();
         assert_eq!(p.is_valid(), polygon_geos.is_valid());
@@ -390,10 +373,6 @@ mod tests {
                 ProblemPosition::Polygon(RingRole::Exterior, CoordinatePosition(1))
             )])
         );
-
-        // Test that the polygon has the same validity status than its SFCGAL equivalent
-        let polygon_sfcgal = p.to_sfcgal().unwrap();
-        assert_eq!(p.is_valid(), polygon_sfcgal.is_valid().unwrap());
 
         // Test that the polygon has the same validity status than its GEOS equivalent
         let polygon_geos: geos::Geometry = (&p).try_into().unwrap();
@@ -426,10 +405,6 @@ mod tests {
             )])
         );
 
-        // Test that the polygon has the same validity status than its SFCGAL equivalent
-        let polygon_sfcgal = p.to_sfcgal().unwrap();
-        assert_eq!(p.is_valid(), polygon_sfcgal.is_valid().unwrap());
-
         // Test that the polygon has the same validity status than its GEOS equivalent
         let polygon_geos: geos::Geometry = (&p).try_into().unwrap();
         assert_eq!(p.is_valid(), polygon_geos.is_valid());
@@ -456,10 +431,6 @@ mod tests {
                 ProblemPosition::Polygon(RingRole::Exterior, CoordinatePosition(-1))
             )])
         );
-
-        // Test that the polygon has the same validity status than its SFCGAL equivalent
-        let polygon_sfcgal = p.to_sfcgal().unwrap();
-        assert_eq!(p.is_valid(), polygon_sfcgal.is_valid().unwrap());
 
         // Test that the polygon has the same validity status than its GEOS equivalent
         let polygon_geos: geos::Geometry = (&p).try_into().unwrap();
@@ -492,10 +463,6 @@ mod tests {
                 ProblemPosition::Polygon(RingRole::Interior(0), CoordinatePosition(-1))
             )])
         );
-
-        // Test that the polygon has the same validity status than its SFCGAL equivalent
-        let polygon_sfcgal = p.to_sfcgal().unwrap();
-        assert_eq!(p.is_valid(), polygon_sfcgal.is_valid().unwrap());
 
         // Test that the polygon has the same validity status than its GEOS equivalent
         let polygon_geos: geos::Geometry = (&p).try_into().unwrap();

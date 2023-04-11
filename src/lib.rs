@@ -94,6 +94,87 @@ impl Display for ProblemAtPosition {
 /// All the problems encountered when checking the validity of a geometry.
 pub struct ProblemReport(pub Vec<ProblemAtPosition>);
 
+impl Display for ProblemPosition {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut str_buffer: Vec<String> = Vec::new();
+        match self {
+            ProblemPosition::Point => str_buffer.push(format!("")),
+            ProblemPosition::LineString(coord) => {
+                if coord.0 == -1 {
+                    str_buffer.push(format!(""))
+                } else {
+                    str_buffer.push(format!(" at coordinate {} of the LineString", coord.0))
+                }
+            }
+            ProblemPosition::Triangle(coord) => {
+                if coord.0 == -1 {
+                    str_buffer.push(format!(""))
+                } else {
+                    str_buffer.push(format!(" at coordinate {} of the Triangle", coord.0))
+                }
+            }
+            ProblemPosition::Polygon(ring_role, coord) => {
+                if coord.0 == -1 {
+                    str_buffer.push(format!(" on the {}", ring_role))
+                } else {
+                    str_buffer.push(format!(" at coordinate {} of the {}", coord.0, ring_role))
+                }
+            }
+            ProblemPosition::MultiPolygon(geom_number, ring_role, coord) => {
+                if coord.0 == -1 {
+                    str_buffer.push(format!(
+                        " on the {} of the Polygon n°{} of the MultiPolygon",
+                        ring_role, geom_number.0
+                    ))
+                } else {
+                    str_buffer.push(format!(
+                        " at coordinate {} of the {} of the Polygon n°{} of the MultiPolygon",
+                        coord.0, ring_role, geom_number.0
+                    ))
+                }
+            }
+            ProblemPosition::MultiLineString(geom_number, coord) => {
+                if coord.0 == -1 {
+                    str_buffer.push(format!(
+                        " on the LineString n°{} of the MultiLineString",
+                        geom_number.0
+                    ))
+                } else {
+                    str_buffer.push(format!(
+                        " at coordinate {} of the LineString n°{} of the MultiLineString",
+                        coord.0, geom_number.0
+                    ))
+                }
+            }
+            ProblemPosition::MultiPoint(geom_number) => str_buffer.push(format!(
+                " on the Point n°{} of the MultiPoint",
+                geom_number.0
+            )),
+            ProblemPosition::GeometryCollection(geom_number, problem_position) => {
+                str_buffer.push(format!(
+                    "{} of the geometry n°{} of the GeometryCollection",
+                    *problem_position, geom_number.0
+                ));
+            }
+            ProblemPosition::Rect(coord) => {
+                if coord.0 == -1 {
+                    str_buffer.push(format!(""))
+                } else {
+                    str_buffer.push(format!(" at coordinate {} of the Rect", coord.0))
+                }
+            }
+            ProblemPosition::Line(coord) => {
+                if coord.0 == -1 {
+                    str_buffer.push(format!(""))
+                } else {
+                    str_buffer.push(format!(" at coordinate {} of the Line", coord.0))
+                }
+            }
+        }
+        write!(f, "{}", str_buffer.join(""))
+    }
+}
+
 impl Display for ProblemReport {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let buffer = self
@@ -101,83 +182,51 @@ impl Display for ProblemReport {
             .iter()
             .map(|p| {
                 let (problem, position) = (&p.0, &p.1);
-                let mut str_buffer : Vec<String> = Vec::new();
-                let mut is_polygon = false;
-                let mut is_multipolygon = false;
-                match position {
-                    ProblemPosition::Point => str_buffer.push(format!(".")),
-                    ProblemPosition::LineString(coord) => {
-                        if coord.0 == -1 {
-                            str_buffer.push(format!(""))
-                        } else {
-                            str_buffer.push(format!(" at coordinate {} of the LineString.", coord.0))
-                        }
-                    },
-                    ProblemPosition::Triangle(coord) => {
-                        if coord.0 == -1 {
-                            str_buffer.push(format!(""))
-                        } else {
-                            str_buffer.push(format!(" at coordinate {} of the Triangle.", coord.0))
-                        }
-                    },
-                    ProblemPosition::Polygon(ring_role, coord) => {
-                        if coord.0 == -1 {
-                            str_buffer.push(format!(" on the {}.", ring_role))
-                        } else {
-                            str_buffer.push(format!(" at coordinate {} of the {}.", coord.0, ring_role))
-                        }
-                    },
-                    ProblemPosition::MultiPolygon(geom_number, ring_role, coord) => {
-                        if coord.0 == -1 {
-                            str_buffer.push(format!(" on the {} of the Polygon {}.", ring_role, geom_number.0))
-                        } else {
-                            str_buffer.push(format!(" at coordinate {} of the {} of the Polygon {}.", coord.0, ring_role, geom_number.0))
-                        }
-                    },
-                    ProblemPosition::MultiLineString(geom_number, coord) => {
-                        if coord.0 == -1 {
-                            str_buffer.push(format!(" on the LineString {}.", geom_number.0))
-                        } else {
-                            str_buffer.push(format!(" at coordinate {} of the LineString {}.", coord.0, geom_number.0))
-                        }
-                    },
-                    ProblemPosition::MultiPoint(geom_number) => {
-                        str_buffer.push(format!(" on the Point {}.", geom_number.0))
-                    },
-                    _  => unreachable!()
-                }
-                match problem {
-                    &Problem::NotFinite => str_buffer.push(format!("Coordinate is not finite (NaN or infinite)")),
-                    &Problem::TooFewPoints => {
-                        if is_polygon || is_multipolygon {
+                let mut str_buffer: Vec<String> = Vec::new();
+                let mut is_polygon = match position {
+                    ProblemPosition::Polygon(_, _) => true,
+                    ProblemPosition::MultiPolygon(_, _, _) => true,
+                    _ => false,
+                };
+
+                str_buffer.push(format!("{}", position));
+
+                match *problem {
+                    Problem::NotFinite => {
+                        str_buffer.push(format!("Coordinate is not finite (NaN or infinite)"))
+                    }
+                    Problem::TooFewPoints => {
+                        if is_polygon {
                             str_buffer.push(format!("Polygon ring has too few points"))
                         } else {
                             str_buffer.push(format!("LineString has too few points"))
                         }
-                    },
-                    &Problem::IdenticalCoords => str_buffer.push(format!("Identical coords")),
-                    &Problem::CollinearCoords => str_buffer.push(format!("Collinear coords")),
-                    &Problem::SelfIntersection => str_buffer.push(format!("Ring has a self-intersection")),
-                    &Problem::IntersectingRingsOnALine => {
-                        str_buffer.push(format!("Two interior rings of a Polygon share a common line"))
-                    },
-                    &Problem::IntersectingRingsOnAnArea => {
-                        str_buffer.push(format!("Two interior rings of a Polygon share a common area"))
-                    },
-                    &Problem::InteriorRingNotContainedInExteriorRing => {
-                        str_buffer.push(format!("The interior ring of a Polygon is not contained in the exterior ring"))
-                    },
-                    &Problem::ElementsOverlaps => {
+                    }
+                    Problem::IdenticalCoords => str_buffer.push(format!("Identical coords")),
+                    Problem::CollinearCoords => str_buffer.push(format!("Collinear coords")),
+                    Problem::SelfIntersection => {
+                        str_buffer.push(format!("Ring has a self-intersection"))
+                    }
+                    Problem::IntersectingRingsOnALine => str_buffer.push(format!(
+                        "Two interior rings of a Polygon share a common line"
+                    )),
+                    Problem::IntersectingRingsOnAnArea => str_buffer.push(format!(
+                        "Two interior rings of a Polygon share a common area"
+                    )),
+                    Problem::InteriorRingNotContainedInExteriorRing => str_buffer.push(format!(
+                        "The interior ring of a Polygon is not contained in the exterior ring"
+                    )),
+                    Problem::ElementsOverlaps => {
                         str_buffer.push(format!("Two Polygons of MultiPolygons overlap partially"))
-                    },
-                    &Problem::ElementsTouchOnALine => {
+                    }
+                    Problem::ElementsTouchOnALine => {
                         str_buffer.push(format!("Two Polygons of MultiPolygons touch on a line"))
-                    },
-                    &Problem::ElementsAreIdentical => {
+                    }
+                    Problem::ElementsAreIdentical => {
                         str_buffer.push(format!("Two Polygons of MultiPolygons are identical"))
-                    },
+                    }
                 };
-                return str_buffer.into_iter().rev().collect::<Vec<_>>().join("");
+                str_buffer.into_iter().rev().collect::<Vec<_>>().join("")
             })
             .collect::<Vec<String>>()
             .join("\n");
@@ -190,6 +239,6 @@ impl Display for ProblemReport {
 pub trait Valid {
     /// Check if the geometry is valid.
     fn is_valid(&self) -> bool;
-    /// Return the reason(s) of invalidity, or None if valid
+    /// Return the reason(s) of invalidity of the geometry, or None if valid.
     fn explain_invalidity(&self) -> Option<Vec<ProblemAtPosition>>;
 }

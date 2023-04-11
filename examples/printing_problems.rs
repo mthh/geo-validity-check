@@ -1,19 +1,48 @@
-use geo_validity_check::{Valid, ProblemReport};
-use geo_types::{Coord, Point, LineString, MultiLineString, Polygon, MultiPolygon, GeometryCollection};
+use geo_types::{
+    Coord, GeometryCollection, Line, LineString, MultiLineString, MultiPolygon, Point, Polygon,
+    Rect, Triangle,
+};
+use geo_validity_check::{ProblemReport, Valid};
 
 fn main() {
     let point = Point::new(0., f64::NAN);
 
+    println!("=================================================");
     println!("Point is valid: {}", point.is_valid());
-    println!("Point is invalid because: {}", ProblemReport(point.explain_invalidity().unwrap()));
+    println!(
+        "Point is invalid because: {}",
+        ProblemReport(point.explain_invalidity().unwrap())
+    );
 
-    let line = LineString(vec![
-        Coord { x: 0., y: 0. },
-        Coord { x: 0., y: 0. },
+    let line = LineString(vec![Coord { x: 0., y: 0. }, Coord { x: 0., y: 0. }]);
+
+    println!("=================================================");
+    println!("LineString is valid: {}", line.is_valid());
+    println!(
+        "LineString is invalid because: {}",
+        ProblemReport(line.explain_invalidity().unwrap())
+    );
+
+    let ml = MultiLineString(vec![
+        LineString::from(vec![(0., 0.), (1., 1.)]),
+        LineString::from(vec![(0., 0.), (0., 0.)]),
     ]);
 
-    println!("Line is valid: {}", line.is_valid());
-    println!("Line is invalid because: {}", ProblemReport(line.explain_invalidity().unwrap()));
+    println!("=================================================");
+    println!("MultiLineString is valid: {}", ml.is_valid());
+    println!(
+        "MultiLineString is invalid because: {}",
+        ProblemReport(ml.explain_invalidity().unwrap())
+    );
+
+    let t = Triangle::new((0., 0.).into(), (0., 0.).into(), (4., 4.).into());
+
+    println!("=================================================");
+    println!("Triangle is valid: {}", t.is_valid());
+    println!(
+        "Triangle is invalid because: {}",
+        ProblemReport(t.explain_invalidity().unwrap())
+    );
 
     let p = Polygon::new(
         LineString::from(vec![(0., 0.), (4., 0.), (4., 4.), (0., 4.), (0., 0.)]),
@@ -30,8 +59,21 @@ fn main() {
         ],
     );
 
+    println!("=================================================");
     println!("Polygon is valid: {}", p.is_valid());
-    println!("Polygon is invalid because: {}", ProblemReport(p.explain_invalidity().unwrap()));
+    println!(
+        "Polygon is invalid because: {}",
+        ProblemReport(p.explain_invalidity().unwrap())
+    );
+
+    let p = Polygon::new(LineString::from(vec![(0., 0.), (4., 0.)]), vec![]);
+
+    println!("=================================================");
+    println!("Polygon is valid: {}", p.is_valid());
+    println!(
+        "Polygon is invalid because: {}",
+        ProblemReport(p.explain_invalidity().unwrap())
+    );
 
     let mp = MultiPolygon(vec![
         Polygon::new(
@@ -68,9 +110,25 @@ fn main() {
         ),
     ]);
 
+    println!("=================================================");
     println!("MultiPolygon is valid: {}", mp.is_valid());
     println!(
         "MultiPolygon is invalid because: {}",
         ProblemReport(mp.explain_invalidity().unwrap())
+    );
+
+    let gc = GeometryCollection(vec![
+        point.into(),
+        line.into(),
+        ml.into(),
+        p.into(),
+        mp.into(),
+    ]);
+
+    println!("=================================================");
+    println!("GeometryCollection is valid: {}", gc.is_valid());
+    println!(
+        "GeometryCollection is invalid because: {}",
+        ProblemReport(gc.explain_invalidity().unwrap())
     );
 }
