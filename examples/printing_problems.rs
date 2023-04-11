@@ -10,7 +10,7 @@ fn main() {
     println!("Point is valid: {}", point.is_valid());
     println!(
         "Point is invalid because: {}",
-        ProblemReport(point.explain_invalidity().unwrap())
+        point.explain_invalidity().unwrap()
     );
 
     let line = LineString(vec![Coord { x: 0., y: 0. }, Coord { x: 0., y: 0. }]);
@@ -19,7 +19,7 @@ fn main() {
     println!("LineString is valid: {}", line.is_valid());
     println!(
         "LineString is invalid because: {}",
-        ProblemReport(line.explain_invalidity().unwrap())
+        line.explain_invalidity().unwrap()
     );
 
     let ml = MultiLineString(vec![
@@ -31,7 +31,7 @@ fn main() {
     println!("MultiLineString is valid: {}", ml.is_valid());
     println!(
         "MultiLineString is invalid because: {}",
-        ProblemReport(ml.explain_invalidity().unwrap())
+        ml.explain_invalidity().unwrap()
     );
 
     let t = Triangle::new((0., 0.).into(), (0., 0.).into(), (4., 4.).into());
@@ -40,7 +40,7 @@ fn main() {
     println!("Triangle is valid: {}", t.is_valid());
     println!(
         "Triangle is invalid because: {}",
-        ProblemReport(t.explain_invalidity().unwrap())
+        t.explain_invalidity().unwrap()
     );
 
     let p = Polygon::new(
@@ -62,7 +62,7 @@ fn main() {
     println!("Polygon is valid: {}", p.is_valid());
     println!(
         "Polygon is invalid because: {}",
-        ProblemReport(p.explain_invalidity().unwrap())
+        p.explain_invalidity().unwrap()
     );
 
     let p = Polygon::new(LineString::from(vec![(0., 0.), (4., 0.)]), vec![]);
@@ -71,7 +71,7 @@ fn main() {
     println!("Polygon is valid: {}", p.is_valid());
     println!(
         "Polygon is invalid because: {}",
-        ProblemReport(p.explain_invalidity().unwrap())
+        p.explain_invalidity().unwrap()
     );
 
     let mp = MultiPolygon(vec![
@@ -113,7 +113,7 @@ fn main() {
     println!("MultiPolygon is valid: {}", mp.is_valid());
     println!(
         "MultiPolygon is invalid because: {}",
-        ProblemReport(mp.explain_invalidity().unwrap())
+        mp.explain_invalidity().unwrap()
     );
 
     let gc = GeometryCollection(vec![
@@ -128,6 +128,6 @@ fn main() {
     println!("GeometryCollection is valid: {}", gc.is_valid());
     println!(
         "GeometryCollection is invalid because: {}",
-        ProblemReport(gc.explain_invalidity().unwrap())
+        gc.explain_invalidity().unwrap()
     );
 }

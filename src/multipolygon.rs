@@ -1,6 +1,6 @@
 use crate::{
-    CoordinatePosition, GeometryPosition, Problem, ProblemAtPosition, ProblemPosition, RingRole,
-    Valid,
+    CoordinatePosition, GeometryPosition, Problem, ProblemAtPosition, ProblemPosition,
+    ProblemReport, RingRole, Valid,
 };
 use geo::coordinate_position::CoordPos;
 use geo::dimensions::Dimensions;
@@ -40,7 +40,7 @@ where
         }
         true
     }
-    fn explain_invalidity(&self) -> Option<Vec<ProblemAtPosition>> {
+    fn explain_invalidity(&self) -> Option<ProblemReport> {
         let mut reason = Vec::new();
 
         // Loop over all the polygons, collect the reasons of invalidity
@@ -48,7 +48,7 @@ where
         for (j, polygon) in self.0.iter().enumerate() {
             let temp_reason = polygon.explain_invalidity();
             if let Some(temp_reason) = temp_reason {
-                for ProblemAtPosition(problem, position) in temp_reason {
+                for ProblemAtPosition(problem, position) in temp_reason.0 {
                     match position {
                         ProblemPosition::Polygon(ring_role, coord_pos) => {
                             reason.push(ProblemAtPosition(
@@ -110,7 +110,7 @@ where
         if reason.is_empty() {
             None
         } else {
-            Some(reason)
+            Some(ProblemReport(reason))
         }
     }
 }
@@ -119,7 +119,7 @@ where
 mod tests {
     use crate::{
         CoordinatePosition, GeometryPosition, Problem, ProblemAtPosition, ProblemPosition,
-        RingRole, Valid,
+        ProblemReport, RingRole, Valid,
     };
     use geo_types::{LineString, MultiPolygon, Polygon};
     use geos::Geom;
@@ -166,7 +166,7 @@ mod tests {
         assert!(!mp.is_valid());
         assert_eq!(
             mp.explain_invalidity(),
-            Some(vec![
+            Some(ProblemReport(vec![
                 ProblemAtPosition(
                     Problem::InteriorRingNotContainedInExteriorRing,
                     ProblemPosition::MultiPolygon(
@@ -199,7 +199,7 @@ mod tests {
                         CoordinatePosition(-1)
                     )
                 )
-            ])
+            ]))
         );
 
         // Test that the polygon has the same validity status than its GEOS equivalent

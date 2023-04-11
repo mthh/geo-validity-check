@@ -85,7 +85,7 @@ println!("{}", multipolygon.invalidity_reason().unwrap());
 
 ## TODO / Ideas
 
-- [ ] Publish on crates.io once the API is stabilized / once we dont need to pull geos from github.
+- [ ] Publish on crates.io once the API is stabilized.
 
 - [ ] Improve the description of the invalidity reason (e.g. *"Interior ring 0 intersects the exterior ring"* could be *"Interior ring 0 intersects the exterior ring at point (1.5, 1.5)"*)
 

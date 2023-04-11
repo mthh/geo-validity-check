@@ -92,6 +92,7 @@ impl Display for ProblemAtPosition {
 }
 
 /// All the problems encountered when checking the validity of a geometry.
+#[derive(Debug, PartialEq)]
 pub struct ProblemReport(pub Vec<ProblemAtPosition>);
 
 impl Display for ProblemPosition {
@@ -236,5 +237,5 @@ pub trait Valid {
     /// Check if the geometry is valid.
     fn is_valid(&self) -> bool;
     /// Return the reason(s) of invalidity of the geometry, or None if valid.
-    fn explain_invalidity(&self) -> Option<Vec<ProblemAtPosition>>;
+    fn explain_invalidity(&self) -> Option<ProblemReport>;
 }

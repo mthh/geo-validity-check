@@ -1,4 +1,6 @@
-use crate::{utils, GeometryPosition, Problem, ProblemAtPosition, ProblemPosition, Valid};
+use crate::{
+    utils, GeometryPosition, Problem, ProblemAtPosition, ProblemPosition, ProblemReport, Valid,
+};
 use geo::GeoFloat;
 use geo_types::MultiPoint;
 
@@ -17,7 +19,7 @@ where
         true
     }
 
-    fn explain_invalidity(&self) -> Option<Vec<ProblemAtPosition>> {
+    fn explain_invalidity(&self) -> Option<ProblemReport> {
         let mut reason = Vec::new();
 
         for (i, point) in self.0.iter().enumerate() {
@@ -32,14 +34,16 @@ where
         if reason.is_empty() {
             None
         } else {
-            Some(reason)
+            Some(ProblemReport(reason))
         }
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::{GeometryPosition, Problem, ProblemAtPosition, ProblemPosition, Valid};
+    use crate::{
+        GeometryPosition, Problem, ProblemAtPosition, ProblemPosition, ProblemReport, Valid,
+    };
     use geo_types::{MultiPoint, Point};
     use geos::Geom;
 
@@ -63,7 +67,7 @@ mod tests {
         assert!(!mp.is_valid());
         assert_eq!(
             mp.explain_invalidity(),
-            Some(vec![
+            Some(ProblemReport(vec![
                 ProblemAtPosition(
                     Problem::NotFinite,
                     ProblemPosition::MultiPoint(GeometryPosition(0))
@@ -72,7 +76,7 @@ mod tests {
                     Problem::NotFinite,
                     ProblemPosition::MultiPoint(GeometryPosition(1))
                 )
-            ])
+            ]))
         );
 
         // Test that this multipoint has the same validity status than its GEOS equivalent

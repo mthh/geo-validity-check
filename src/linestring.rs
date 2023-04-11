@@ -1,4 +1,6 @@
-use crate::{utils, CoordinatePosition, Problem, ProblemAtPosition, ProblemPosition, Valid};
+use crate::{
+    utils, CoordinatePosition, Problem, ProblemAtPosition, ProblemPosition, ProblemReport, Valid,
+};
 use geo::GeoFloat;
 use geo_types::LineString;
 use num_traits::FromPrimitive;
@@ -23,7 +25,7 @@ where
         true
     }
 
-    fn explain_invalidity(&self) -> Option<Vec<ProblemAtPosition>> {
+    fn explain_invalidity(&self) -> Option<ProblemReport> {
         let mut reason = Vec::new();
 
         // Perform the various checks
@@ -47,14 +49,16 @@ where
         if reason.is_empty() {
             None
         } else {
-            Some(reason)
+            Some(ProblemReport(reason))
         }
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::{CoordinatePosition, Problem, ProblemAtPosition, ProblemPosition, Valid};
+    use crate::{
+        CoordinatePosition, Problem, ProblemAtPosition, ProblemPosition, ProblemReport, Valid,
+    };
     use geo_types::{Coord, LineString};
     use geos::Geom;
 
@@ -75,10 +79,10 @@ mod tests {
         assert!(!ls.is_valid());
         assert_eq!(
             ls.explain_invalidity(),
-            Some(vec![ProblemAtPosition(
+            Some(ProblemReport(vec![ProblemAtPosition(
                 Problem::TooFewPoints,
                 ProblemPosition::LineString(CoordinatePosition(0))
-            )])
+            )]))
         );
 
         // This linestring is invalid according to this crate but valid according to GEOS
@@ -92,10 +96,10 @@ mod tests {
         assert!(!ls.is_valid());
         assert_eq!(
             ls.explain_invalidity(),
-            Some(vec![ProblemAtPosition(
+            Some(ProblemReport(vec![ProblemAtPosition(
                 Problem::TooFewPoints,
                 ProblemPosition::LineString(CoordinatePosition(0))
-            )])
+            )]))
         );
 
         // Creating this linestring with geos fails (as soon as its creation is attempted)
@@ -109,10 +113,10 @@ mod tests {
         assert!(!ls.is_valid());
         assert_eq!(
             ls.explain_invalidity(),
-            Some(vec![ProblemAtPosition(
+            Some(ProblemReport(vec![ProblemAtPosition(
                 Problem::TooFewPoints,
                 ProblemPosition::LineString(CoordinatePosition(0))
-            )])
+            )]))
         );
 
         // Test that the linestring has the same validity status than its GEOS equivalent

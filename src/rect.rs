@@ -1,4 +1,6 @@
-use crate::{utils, CoordinatePosition, Problem, ProblemAtPosition, ProblemPosition, Valid};
+use crate::{
+    utils, CoordinatePosition, Problem, ProblemAtPosition, ProblemPosition, ProblemReport, Valid,
+};
 use geo_types::Rect;
 
 impl Valid for Rect {
@@ -10,7 +12,7 @@ impl Valid for Rect {
         }
         true
     }
-    fn explain_invalidity(&self) -> Option<Vec<ProblemAtPosition>> {
+    fn explain_invalidity(&self) -> Option<ProblemReport> {
         let mut reason = Vec::new();
 
         if utils::check_coord_is_not_finite(&self.min()) {
@@ -29,7 +31,7 @@ impl Valid for Rect {
         if reason.is_empty() {
             None
         } else {
-            Some(reason)
+            Some(ProblemReport(reason))
         }
     }
 }

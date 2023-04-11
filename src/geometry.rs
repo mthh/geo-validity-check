@@ -1,4 +1,4 @@
-use crate::{ProblemAtPosition, Valid};
+use crate::{ProblemReport, Valid};
 use geo_types::Geometry;
 
 impl Valid for Geometry {
@@ -16,7 +16,7 @@ impl Valid for Geometry {
             Geometry::GeometryCollection(e) => e.is_valid(),
         }
     }
-    fn explain_invalidity(&self) -> Option<Vec<ProblemAtPosition>> {
+    fn explain_invalidity(&self) -> Option<ProblemReport> {
         match self {
             Geometry::Point(e) => e.explain_invalidity(),
             Geometry::Line(e) => e.explain_invalidity(),

@@ -1,4 +1,6 @@
-use crate::{utils, CoordinatePosition, Problem, ProblemAtPosition, ProblemPosition, Valid};
+use crate::{
+    utils, CoordinatePosition, Problem, ProblemAtPosition, ProblemPosition, ProblemReport, Valid,
+};
 use geo::CoordNum;
 use geo_types::Triangle;
 use num_traits::Float;
@@ -26,7 +28,7 @@ where
         }
         true
     }
-    fn explain_invalidity(&self) -> Option<Vec<ProblemAtPosition>> {
+    fn explain_invalidity(&self) -> Option<ProblemReport> {
         let mut reason = Vec::new();
 
         if utils::check_coord_is_not_finite(&self.0) {
@@ -77,14 +79,16 @@ where
         if reason.is_empty() {
             None
         } else {
-            Some(reason)
+            Some(ProblemReport(reason))
         }
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::{CoordinatePosition, Problem, ProblemAtPosition, ProblemPosition, Valid};
+    use crate::{
+        CoordinatePosition, Problem, ProblemAtPosition, ProblemPosition, ProblemReport, Valid,
+    };
     use geo_types::Triangle;
 
     #[test]
@@ -100,10 +104,10 @@ mod tests {
         assert!(!t.is_valid());
         assert_eq!(
             t.explain_invalidity(),
-            Some(vec![ProblemAtPosition(
+            Some(ProblemReport(vec![ProblemAtPosition(
                 Problem::IdenticalCoords,
                 ProblemPosition::Triangle(CoordinatePosition(1)),
-            )])
+            )]))
         );
     }
 
@@ -113,10 +117,10 @@ mod tests {
         assert!(!t.is_valid());
         assert_eq!(
             t.explain_invalidity(),
-            Some(vec![ProblemAtPosition(
+            Some(ProblemReport(vec![ProblemAtPosition(
                 Problem::CollinearCoords,
                 ProblemPosition::Triangle(CoordinatePosition(-1)),
-            )])
+            )]))
         );
     }
 

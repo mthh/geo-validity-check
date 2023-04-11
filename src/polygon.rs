@@ -1,5 +1,6 @@
 use crate::{
-    utils, CoordinatePosition, Problem, ProblemAtPosition, ProblemPosition, RingRole, Valid,
+    utils, CoordinatePosition, Problem, ProblemAtPosition, ProblemPosition, ProblemReport,
+    RingRole, Valid,
 };
 use geo::coordinate_position::CoordPos;
 use geo::dimensions::Dimensions;
@@ -73,7 +74,7 @@ where
         }
         true
     }
-    fn explain_invalidity(&self) -> Option<Vec<ProblemAtPosition>> {
+    fn explain_invalidity(&self) -> Option<ProblemReport> {
         let mut reason = Vec::new();
 
         for (j, ring) in self.interiors().iter().chain([self.exterior()]).enumerate() {
@@ -172,14 +173,17 @@ where
         if reason.is_empty() {
             None
         } else {
-            Some(reason)
+            Some(ProblemReport(reason))
         }
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::{CoordinatePosition, Problem, ProblemAtPosition, ProblemPosition, RingRole, Valid};
+    use crate::{
+        CoordinatePosition, Problem, ProblemAtPosition, ProblemPosition, ProblemReport, RingRole,
+        Valid,
+    };
     use geo_types::{Coord, LineString, Polygon};
     use geos::Geom;
 
@@ -269,7 +273,7 @@ mod tests {
         assert!(!p.is_valid());
         assert_eq!(
             p.explain_invalidity(),
-            Some(vec![
+            Some(ProblemReport(vec![
                 ProblemAtPosition(
                     Problem::IntersectingRingsOnALine,
                     ProblemPosition::Polygon(RingRole::Interior(0), CoordinatePosition(-1))
@@ -278,7 +282,7 @@ mod tests {
                     Problem::IntersectingRingsOnALine,
                     ProblemPosition::Polygon(RingRole::Interior(1), CoordinatePosition(-1))
                 )
-            ])
+            ]))
         );
 
         // Test that the polygon has the same validity status than its GEOS equivalent
@@ -308,7 +312,7 @@ mod tests {
         assert!(!p.is_valid());
         assert_eq!(
             p.explain_invalidity(),
-            Some(vec![
+            Some(ProblemReport(vec![
                 ProblemAtPosition(
                     Problem::IntersectingRingsOnAnArea,
                     ProblemPosition::Polygon(RingRole::Interior(0), CoordinatePosition(-1))
@@ -317,7 +321,7 @@ mod tests {
                     Problem::IntersectingRingsOnAnArea,
                     ProblemPosition::Polygon(RingRole::Interior(1), CoordinatePosition(-1))
                 )
-            ])
+            ]))
         );
 
         // Test that the polygon has the same validity status than its GEOS equivalent
@@ -345,10 +349,10 @@ mod tests {
         assert!(!p.is_valid());
         assert_eq!(
             p.explain_invalidity(),
-            Some(vec![ProblemAtPosition(
+            Some(ProblemReport(vec![ProblemAtPosition(
                 Problem::IntersectingRingsOnALine,
                 ProblemPosition::Polygon(RingRole::Interior(0), CoordinatePosition(-1))
-            )])
+            )]))
         );
 
         // Test that the polygon has the same validity status than its GEOS equivalent
@@ -368,10 +372,10 @@ mod tests {
         assert!(!p.is_valid());
         assert_eq!(
             p.explain_invalidity(),
-            Some(vec![ProblemAtPosition(
+            Some(ProblemReport(vec![ProblemAtPosition(
                 Problem::TooFewPoints,
                 ProblemPosition::Polygon(RingRole::Exterior, CoordinatePosition(1))
-            )])
+            )]))
         );
 
         // Test that the polygon has the same validity status than its GEOS equivalent
@@ -399,10 +403,10 @@ mod tests {
         assert!(!p.is_valid());
         assert_eq!(
             p.explain_invalidity(),
-            Some(vec![ProblemAtPosition(
+            Some(ProblemReport(vec![ProblemAtPosition(
                 Problem::SelfIntersection,
                 ProblemPosition::Polygon(RingRole::Exterior, CoordinatePosition(-1))
-            )])
+            )]))
         );
 
         // Test that the polygon has the same validity status than its GEOS equivalent
@@ -426,10 +430,10 @@ mod tests {
         assert!(!p.is_valid());
         assert_eq!(
             p.explain_invalidity(),
-            Some(vec![ProblemAtPosition(
+            Some(ProblemReport(vec![ProblemAtPosition(
                 Problem::SelfIntersection,
                 ProblemPosition::Polygon(RingRole::Exterior, CoordinatePosition(-1))
-            )])
+            )]))
         );
 
         // Test that the polygon has the same validity status than its GEOS equivalent
@@ -458,10 +462,10 @@ mod tests {
         assert!(!p.is_valid());
         assert_eq!(
             p.explain_invalidity(),
-            Some(vec![ProblemAtPosition(
+            Some(ProblemReport(vec![ProblemAtPosition(
                 Problem::InteriorRingNotContainedInExteriorRing,
                 ProblemPosition::Polygon(RingRole::Interior(0), CoordinatePosition(-1))
-            )])
+            )]))
         );
 
         // Test that the polygon has the same validity status than its GEOS equivalent
@@ -500,7 +504,7 @@ mod tests {
         assert!(!p1.is_valid());
         assert_eq!(
             p1.explain_invalidity(),
-            Some(vec![
+            Some(ProblemReport(vec![
                 ProblemAtPosition(
                     Problem::IntersectingRingsOnAnArea,
                     ProblemPosition::Polygon(RingRole::Interior(0), CoordinatePosition(-1))
@@ -509,7 +513,7 @@ mod tests {
                     Problem::IntersectingRingsOnAnArea,
                     ProblemPosition::Polygon(RingRole::Interior(1), CoordinatePosition(-1))
                 )
-            ])
+            ]))
         );
 
         // Let see if we switch the order of the interior rings
@@ -519,7 +523,7 @@ mod tests {
         assert!(!p2.is_valid());
         assert_eq!(
             p2.explain_invalidity(),
-            Some(vec![
+            Some(ProblemReport(vec![
                 ProblemAtPosition(
                     Problem::IntersectingRingsOnAnArea,
                     ProblemPosition::Polygon(RingRole::Interior(0), CoordinatePosition(-1))
@@ -528,7 +532,7 @@ mod tests {
                     Problem::IntersectingRingsOnAnArea,
                     ProblemPosition::Polygon(RingRole::Interior(1), CoordinatePosition(-1))
                 )
-            ])
+            ]))
         );
 
         // Test that the polygons have the same validity status than their GEOS equivalents

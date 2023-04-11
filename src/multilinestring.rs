@@ -1,4 +1,4 @@
-use crate::{GeometryPosition, ProblemAtPosition, ProblemPosition, Valid};
+use crate::{GeometryPosition, ProblemAtPosition, ProblemPosition, ProblemReport, Valid};
 use geo::GeoFloat;
 use geo_types::MultiLineString;
 use num_traits::FromPrimitive;
@@ -16,13 +16,13 @@ where
         }
         true
     }
-    fn explain_invalidity(&self) -> Option<Vec<ProblemAtPosition>> {
+    fn explain_invalidity(&self) -> Option<ProblemReport> {
         let mut reason = Vec::new();
 
         for (j, line) in self.0.iter().enumerate() {
             let temp_reason = line.explain_invalidity();
             if let Some(temp_reason) = temp_reason {
-                for ProblemAtPosition(problem, position) in temp_reason {
+                for ProblemAtPosition(problem, position) in temp_reason.0 {
                     match position {
                         ProblemPosition::LineString(coord_pos) => {
                             reason.push(ProblemAtPosition(
@@ -39,7 +39,7 @@ where
         if reason.is_empty() {
             None
         } else {
-            Some(reason)
+            Some(ProblemReport(reason))
         }
     }
 }
@@ -47,7 +47,8 @@ where
 #[cfg(test)]
 mod tests {
     use crate::{
-        CoordinatePosition, GeometryPosition, Problem, ProblemAtPosition, ProblemPosition, Valid,
+        CoordinatePosition, GeometryPosition, Problem, ProblemAtPosition, ProblemPosition,
+        ProblemReport, Valid,
     };
     use geo_types::{Coord, LineString, MultiLineString};
     use geos::Geom;
@@ -77,10 +78,10 @@ mod tests {
         assert!(!mls.is_valid());
         assert_eq!(
             mls.explain_invalidity(),
-            Some(vec![ProblemAtPosition(
+            Some(ProblemReport(vec![ProblemAtPosition(
                 Problem::TooFewPoints,
                 ProblemPosition::MultiLineString(GeometryPosition(1), CoordinatePosition(0))
-            )])
+            )]))
         );
 
         // Test that the linestring has the same validity status than its GEOS equivalent

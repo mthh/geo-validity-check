@@ -1,4 +1,4 @@
-use crate::{ProblemAtPosition, Valid};
+use crate::{ProblemReport, Valid};
 use geo::GeoFloat;
 use geo_types::Point;
 
@@ -11,14 +11,14 @@ where
     fn is_valid(&self) -> bool {
         self.0.is_valid()
     }
-    fn explain_invalidity(&self) -> Option<Vec<ProblemAtPosition>> {
+    fn explain_invalidity(&self) -> Option<ProblemReport> {
         self.0.explain_invalidity()
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::{Problem, ProblemAtPosition, ProblemPosition, Valid};
+    use crate::{Problem, ProblemAtPosition, ProblemPosition, ProblemReport, Valid};
     use geo_types::Point;
     use geos::Geom;
 
@@ -39,10 +39,10 @@ mod tests {
         assert!(!p.is_valid());
         assert_eq!(
             p.explain_invalidity(),
-            Some(vec![ProblemAtPosition(
+            Some(ProblemReport(vec![ProblemAtPosition(
                 Problem::NotFinite,
                 ProblemPosition::Point
-            )])
+            )]))
         );
 
         // For GEOS this is an "empty point" (WKT representation is "POINT EMPTY")

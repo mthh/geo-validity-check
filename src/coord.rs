@@ -1,4 +1,4 @@
-use crate::{utils, Problem, ProblemAtPosition, ProblemPosition, Valid};
+use crate::{utils, Problem, ProblemAtPosition, ProblemPosition, ProblemReport, Valid};
 use geo::GeoFloat;
 use geo_types::Coord;
 
@@ -12,7 +12,7 @@ where
         }
         true
     }
-    fn explain_invalidity(&self) -> Option<Vec<ProblemAtPosition>> {
+    fn explain_invalidity(&self) -> Option<ProblemReport> {
         let mut reason = Vec::new();
 
         if utils::check_coord_is_not_finite(self) {
@@ -26,7 +26,7 @@ where
         if reason.is_empty() {
             None
         } else {
-            Some(reason)
+            Some(ProblemReport(reason))
         }
     }
 }

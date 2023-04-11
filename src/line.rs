@@ -1,4 +1,6 @@
-use crate::{utils, CoordinatePosition, Problem, ProblemAtPosition, ProblemPosition, Valid};
+use crate::{
+    utils, CoordinatePosition, Problem, ProblemAtPosition, ProblemPosition, ProblemReport, Valid,
+};
 use geo::GeoFloat;
 use geo_types::Line;
 use num_traits::FromPrimitive;
@@ -20,7 +22,7 @@ where
 
         true
     }
-    fn explain_invalidity(&self) -> Option<Vec<ProblemAtPosition>> {
+    fn explain_invalidity(&self) -> Option<ProblemReport> {
         let mut reason = Vec::new();
 
         if utils::check_coord_is_not_finite(&self.start) {
@@ -46,14 +48,16 @@ where
         if reason.is_empty() {
             None
         } else {
-            Some(reason)
+            Some(ProblemReport(reason))
         }
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::{CoordinatePosition, Problem, ProblemAtPosition, ProblemPosition, Valid};
+    use crate::{
+        CoordinatePosition, Problem, ProblemAtPosition, ProblemPosition, ProblemReport, Valid,
+    };
     use geo_types::Line;
 
     #[test]
@@ -69,10 +73,10 @@ mod tests {
         assert!(!l.is_valid());
         assert_eq!(
             l.explain_invalidity(),
-            Some(vec![ProblemAtPosition(
+            Some(ProblemReport(vec![ProblemAtPosition(
                 Problem::NotFinite,
                 ProblemPosition::Line(CoordinatePosition(1)),
-            )])
+            )]))
         );
     }
 
@@ -82,10 +86,10 @@ mod tests {
         assert!(!l.is_valid());
         assert_eq!(
             l.explain_invalidity(),
-            Some(vec![ProblemAtPosition(
+            Some(ProblemReport(vec![ProblemAtPosition(
                 Problem::IdenticalCoords,
                 ProblemPosition::Line(CoordinatePosition(0)),
-            )])
+            )]))
         );
     }
 }

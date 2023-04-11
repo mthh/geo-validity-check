@@ -1,4 +1,4 @@
-use crate::{GeometryPosition, ProblemAtPosition, ProblemPosition, Valid};
+use crate::{GeometryPosition, ProblemAtPosition, ProblemPosition, ProblemReport, Valid};
 use geo_types::GeometryCollection;
 
 /// GeometryCollection is valid if all its elements are valid
@@ -11,7 +11,7 @@ impl Valid for GeometryCollection {
         }
         true
     }
-    fn explain_invalidity(&self) -> Option<Vec<ProblemAtPosition>> {
+    fn explain_invalidity(&self) -> Option<ProblemReport> {
         let mut reason = Vec::new();
 
         // Loop over all the geometries, collect the reasons of invalidity
@@ -19,7 +19,7 @@ impl Valid for GeometryCollection {
         for (i, geometry) in self.0.iter().enumerate() {
             let temp_reason = geometry.explain_invalidity();
             if let Some(temp_reason) = temp_reason {
-                for ProblemAtPosition(problem, position) in temp_reason {
+                for ProblemAtPosition(problem, position) in temp_reason.0 {
                     reason.push(ProblemAtPosition(
                         problem,
                         ProblemPosition::GeometryCollection(
@@ -34,7 +34,7 @@ impl Valid for GeometryCollection {
         if reason.is_empty() {
             None
         } else {
-            Some(reason)
+            Some(ProblemReport(reason))
         }
     }
 }
@@ -42,7 +42,8 @@ impl Valid for GeometryCollection {
 #[cfg(test)]
 mod tests {
     use crate::{
-        CoordinatePosition, GeometryPosition, Problem, ProblemAtPosition, ProblemPosition, Valid,
+        CoordinatePosition, GeometryPosition, Problem, ProblemAtPosition, ProblemPosition,
+        ProblemReport, Valid,
     };
     use geo_types::{Coord, Geometry, GeometryCollection, LineString, Point};
     use geos::Geom;
@@ -63,13 +64,13 @@ mod tests {
         assert!(!gc.is_valid());
         assert_eq!(
             gc.explain_invalidity(),
-            Some(vec![ProblemAtPosition(
+            Some(ProblemReport(vec![ProblemAtPosition(
                 Problem::TooFewPoints,
                 ProblemPosition::GeometryCollection(
                     GeometryPosition(2),
                     Box::new(ProblemPosition::LineString(CoordinatePosition(0)))
                 )
-            )])
+            )]))
         );
 
         let geoms =
