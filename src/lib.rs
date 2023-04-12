@@ -41,11 +41,13 @@ impl std::fmt::Display for RingRole {
 }
 
 #[derive(Debug, PartialEq)]
-/// The position of the problem in a multi-geometry.
+/// The position of the problem in a multi-geometry, starting at 0.
 pub struct GeometryPosition(usize);
 
 #[derive(Debug, PartialEq)]
 /// The coordinate position of the problem in the geometry.
+/// If the value is 0 or more, it is the index of the coordinate.
+/// If the value is -1 it indicates that the coordinate position is not relevant or unknown.
 pub struct CoordinatePosition(isize);
 
 #[derive(Debug, PartialEq)]
@@ -82,11 +84,11 @@ pub enum Problem {
     IntersectingRingsOnAnArea,
     /// The interior ring of a Polygon is not contained in the exterior ring
     InteriorRingNotContainedInExteriorRing,
-    /// Two Polygons of MultiPolygons overlap partially
+    /// Two Polygons of a MultiPolygon overlap partially
     ElementsOverlaps,
-    /// Two Polygons of MultiPolygons touch on a line
+    /// Two Polygons of a MultiPolygon touch on a line
     ElementsTouchOnALine,
-    /// Two Polygons of MultiPolygons are identical
+    /// Two Polygons of a MultiPolygon are identical
     ElementsAreIdentical,
 }
 

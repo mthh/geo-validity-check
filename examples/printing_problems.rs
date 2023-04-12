@@ -1,7 +1,7 @@
 use geo_types::{
     Coord, GeometryCollection, LineString, MultiLineString, MultiPolygon, Point, Polygon, Triangle,
 };
-use geo_validity_check::{ProblemReport, Valid};
+use geo_validity_check::Valid;
 
 fn main() {
     let point = Point::new(0., f64::NAN);
