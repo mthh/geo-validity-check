@@ -4,7 +4,7 @@
 > Note that validation has been added directly to [`geo`](https://github.com/georust/geo) in december 2024 (see [#1279](https://github.com/georust/geo/pull/1279))
 > on the basis of this crate, plus improvements by the `geo` maintainers.  
 > You can now find a `Validation` trait in the `geo` crate that provides the same functionality as this crate.  
-> I therefore do not plan to maintain this crate anymore and the repository will be archived soon.
+> I therefore do not plan to maintain this crate anymore and this repository is now archived.
 
 
 Expose a `Valid` trait to check if rust [geo-types](https://crates.io/crates/geo-types) geometries are valid.
